@@ -468,7 +468,8 @@
       } catch(e){}
     }
 
-    // 2. Load Tokens & Quotas
+    
+    // 2. Load Tokens, Quotas & Models Management
     async function loadTokens() {
       const tbody = document.getElementById('tokensTbody');
       try {
@@ -480,34 +481,114 @@
         Object.keys(users).forEach(uName => {
           const u = users[uName];
           const tr = document.createElement('tr');
-          const quotaStr = u.token_quota === -1 ? 'Безлимит (Админ)' : `${u.total_tokens} / ${u.token_quota}`;
-          const modelsStr = Object.keys(u.models_usage || {}).join(', ') || 'нет запросов';
+          const isUnlimited = u.token_quota === -1;
+          const quotaBadge = isUnlimited 
+            ? '<span style="background:rgba(16,185,129,0.15); color:var(--accent-emerald); padding:3px 8px; border-radius:6px; font-weight:800;">♾️ Безлимит</span>' 
+            : `<span>${u.total_tokens.toLocaleString()} / ${u.token_quota.toLocaleString()}</span>`;
+          
+          const modelsList = u.allowed_models || ['*'];
+          const modelsBadge = modelsList.includes('*')
+            ? '<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700;">🌟 Все модели (*)</span>'
+            : modelsList.map(m => `<span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:11px; margin-right:4px;">${m}</span>`).join('');
 
           tr.innerHTML = `
             <td><strong>@${uName}</strong></td>
             <td><span style="color:var(--accent-cyan); font-weight:700;">${u.total_tokens.toLocaleString()}</span></td>
             <td>${u.requests_count}</td>
-            <td><strong>${quotaStr}</strong></td>
-            <td style="font-size:11px; color:var(--text-muted);">${modelsStr}</td>
+            <td><strong>${quotaBadge}</strong></td>
             <td>
-              <button class="btn-action btn-quota" data-user="${uName}" data-quota="${u.token_quota}">⚙️ Лимит</button>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                ${modelsBadge}
+                <button class="btn-action btn-edit-models" data-user="${uName}" data-models='${JSON.stringify(modelsList)}' style="font-size:11px; padding:2px 6px;">✏️ Изменить</button>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                ${!isUnlimited ? `<button class="btn-action btn-make-unlimited" data-user="${uName}" style="background:rgba(16,185,129,0.15); color:var(--accent-emerald);">♾️ Безлимит</button>` : ''}
+                <button class="btn-action btn-quota" data-user="${uName}" data-quota="${u.token_quota}">⚙️ Лимит</button>
+                <button class="btn-action btn-reset-tokens" data-user="${uName}" title="Сбросить счетчик">🔄 Сброс</button>
+                ${uName !== 'ardont' ? `<button class="btn-action delete btn-del-stats" data-user="${uName}" title="Удалить из статистики">🗑️</button>` : ''}
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
+        });
+
+        // Event listeners for tokens table
+        document.querySelectorAll('.btn-make-unlimited').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const uName = btn.getAttribute('data-user');
+            await fetch('/api/admin/tokens/set_quota', {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify({ username: uName, quota: -1, allowed_models: ["*"] })
+            });
+            showToast(`Для @${uName} включен полный БЕЗЛИМИТ!`);
+            loadTokens();
+          });
         });
 
         document.querySelectorAll('.btn-quota').forEach(btn => {
           btn.addEventListener('click', async () => {
             const uName = btn.getAttribute('data-user');
             const curQ = btn.getAttribute('data-quota');
-            const newQ = prompt(`Установите лимит токенов для @${uName} (-1 = безлимит):`, curQ);
-            if (newQ !== null) {
+            const newQ = prompt(`Установите лимит токенов для @${uName} (-1 = безлимит, 50000 = стандарт):`, curQ);
+            if (newQ !== null && newQ.trim() !== '') {
               await fetch('/api/admin/tokens/set_quota', {
                 method: 'POST',
                 headers: authHeaders,
-                body: JSON.stringify({ username: uName, quota: parseInt(newQ) })
+                body: JSON.stringify({ username: uName, quota: parseInt(newQ.trim()) })
               });
               showToast(`Лимит для @${uName} установлен на ${newQ}`);
+              loadTokens();
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-edit-models').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const uName = btn.getAttribute('data-user');
+            const curModels = JSON.parse(btn.getAttribute('data-models') || '["*"]');
+            const promptStr = prompt(
+              `Доступные модели для @${uName} (через запятую, либо * для всех):
+
+Варианты: *, gemini-flash-latest, gemini-pro-latest, deepseek-chat`,
+              curModels.join(', ')
+            );
+            if (promptStr !== null) {
+              const list = promptStr.split(',').map(s => s.trim()).filter(s => s);
+              await fetch('/api/admin/tokens/update_models', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ username: uName, allowed_models: list.length ? list : ["*"] })
+              });
+              showToast(`Модели для @${uName} обновлены: ${list.join(', ')}`);
+              loadTokens();
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-reset-tokens').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const uName = btn.getAttribute('data-user');
+            if (confirm(`Сбросить счетчик использованных токенов для @${uName} в 0?`)) {
+              await fetch('/api/admin/tokens/reset_usage', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ username: uName })
+              });
+              showToast(`Счетчик для @${uName} сброшен`);
+              loadTokens();
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-del-stats').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const uName = btn.getAttribute('data-user');
+            if (confirm(`Удалить запись статистики для @${uName}?`)) {
+              await fetch(`/api/admin/tokens/user/${uName}`, { method: 'DELETE', headers: authHeaders });
+              showToast(`Запись @${uName} удалена`);
               loadTokens();
             }
           });
@@ -516,7 +597,17 @@
       } catch(e){}
     }
 
-    // 3. Load Invites
+    // Button: Remove all limits for everyone
+    document.getElementById('btnRemoveAllLimits').addEventListener('click', async () => {
+      if (confirm('Снять ВСЕ лимиты токенов и открыть ВСЕ модели для абсолютно всех пользователей?')) {
+        const res = await fetch('/api/admin/tokens/remove_all_limits', { method: 'POST', headers: authHeaders });
+        const d = await res.json();
+        showToast(d.message);
+        loadTokens();
+      }
+    });
+
+    // 3. Load Invites with Delete Option
     async function loadInvites() {
       const tbody = document.getElementById('invitesTbody');
       try {
@@ -534,110 +625,40 @@
             <td>${inv.claimed_by_vk ? `VK ID: ${inv.claimed_by_vk}` : '—'}</td>
             <td style="font-size:11px; color:var(--text-muted);">${inv.created_at}</td>
             <td>
-              <button class="btn-action" onclick="navigator.clipboard.writeText('${inv.code}'); showToast('Инвайт-код скопирован!');">📋 Скопировать</button>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-action" onclick="navigator.clipboard.writeText('${inv.code}'); showToast('Инвайт-код скопирован!');">📋 Копировать</button>
+                <button class="btn-action delete btn-del-invite" data-code="${inv.code}">🗑️</button>
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
         });
-      } catch(e){}
-    }
 
-    // Generate Invite
-    document.getElementById('btnGenInvite').addEventListener('click', async () => {
-      const targetUser = prompt('Укажите логин пользователя (или оставьте пустым для нового):', 'maxim');
-      if (targetUser !== null) {
-        const r = await fetch('/api/admin/vk/generate_invite', {
-          method: 'POST',
-          headers: authHeaders,
-          body: JSON.stringify({ target_username: targetUser, note: 'Admin generated' })
+        document.querySelectorAll('.btn-del-invite').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const code = btn.getAttribute('data-code');
+            if (confirm(`Удалить инвайт-код ${code}?`)) {
+              await fetch(`/api/admin/vk/invites/${code}`, { method: 'DELETE', headers: authHeaders });
+              showToast(`Инвайт-код ${code} удален`);
+              loadInvites();
+            }
+          });
         });
-        const d = await r.json();
-        showToast(`Инвайт-код создан: ${d.code}`);
-        loadInvites();
-      }
-    });
 
-    // Bind VK Form
-    document.getElementById('bindVkForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('bindUsername').value.trim();
-      const v = document.getElementById('bindVkId').value.trim();
-      const r = await fetch('/api/admin/vk/bind', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({ username: u, vk_id: v })
-      });
-      const d = await r.json();
-      showToast(d.message);
-      loadUsers();
-    });
-
-    // Add User Form
-    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('newUsername').value.trim();
-      const p = document.getElementById('newPassword').value.trim();
-      const dn = document.getElementById('newDisplayName').value.trim();
-      const role = document.getElementById('newRole').value;
-
-      const perms = {
-        can_chat: document.getElementById('permChat').checked,
-        can_storage: document.getElementById('permStorage').checked,
-        can_execute_scripts: document.getElementById('permScripts').checked,
-        can_manage_skills: document.getElementById('permSkills').checked,
-        is_admin: role === 'admin'
-      };
-
-      const res = await fetch('/api/admin/users/create', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({ username: u, password: p, display_name: dn, role: role, permissions: perms })
-      });
-      const data = await res.json();
-      showToast(data.message);
-      document.getElementById('addUserForm').reset();
-      loadUsers();
-    });
-
-    document.getElementById('btnRefreshUsers').addEventListener('click', loadUsers);
-    document.getElementById('btnRefreshTokens').addEventListener('click', loadTokens);
-    document.getElementById('btnTabTokens').addEventListener('click', loadTokens);
-    document.getElementById('btnTabVK').addEventListener('click', loadInvites);
-
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      localStorage.removeItem('homeserver_token');
-      localStorage.removeItem('homeserver_user');
-      window.location.href = '/';
-    });
-
-    
-    // 4. Global VK Config
-    async function loadGlobalVkConfig() {
-      try {
-        const res = await fetch('/api/admin/vk/config', { headers: authHeaders });
-        const data = await res.json();
-        document.getElementById('cfgVkUserId').value = data.vk_user_id || '';
-        document.getElementById('cfgVkGroupId').value = data.vk_group_id || '';
-        document.getElementById('cfgVkToken').value = data.vk_bot_token || '';
       } catch(e){}
     }
 
-    document.getElementById('globalVkConfigForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const uId = document.getElementById('cfgVkUserId').value.trim();
-      const gId = document.getElementById('cfgVkGroupId').value.trim();
-      const tok = document.getElementById('cfgVkToken').value.trim();
-      const res = await fetch('/api/admin/vk/config', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({ vk_user_id: uId, vk_group_id: gId, vk_bot_token: tok })
+    // Quick Bind My VK Button
+    const btnQuickVk = document.getElementById('btnQuickBindMyVk');
+    if (btnQuickVk) {
+      btnQuickVk.addEventListener('click', async () => {
+        const res = await fetch('/api/admin/vk/bind_my_vk', { method: 'POST', headers: authHeaders });
+        const d = await res.json();
+        showToast(d.message);
+        loadUsers();
+        loadGlobalVkConfig();
       });
-      const d = await res.json();
-      showToast(d.message);
-    });
-
-    document.getElementById('btnReloadVkConfig').addEventListener('click', loadGlobalVkConfig);
-    document.getElementById('btnTabVK').addEventListener('click', () => { loadInvites(); loadGlobalVkConfig(); });
+    }
 
     // Init
     loadUsers();

@@ -114,3 +114,49 @@ def set_user_quota(username: str, quota: int, allowed_models: List[str] = None) 
     if allowed_models is not None:
         user_stats["allowed_models"] = allowed_models
     return save_token_stats(stats)
+
+
+def remove_all_limits() -> bool:
+    """Полностью снимает все квоты и открывает все модели для всех пользователей."""
+    stats = load_token_stats()
+    for u in stats.get("users", {}).values():
+        u["token_quota"] = -1
+        u["allowed_models"] = ["*"]
+    return save_token_stats(stats)
+
+def update_user_models(username: str, allowed_models: List[str]) -> bool:
+    """Обновляет список доступных моделей для пользователя."""
+    clean_user = (username or "ardont").strip().lower()
+    stats = load_token_stats()
+    user_stats = stats.setdefault("users", {}).setdefault(clean_user, {
+        "total_tokens": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "requests_count": 0,
+        "token_quota": -1,
+        "models_usage": {}
+    })
+    user_stats["allowed_models"] = allowed_models if allowed_models else ["*"]
+    return save_token_stats(stats)
+
+def reset_user_tokens(username: str) -> bool:
+    """Сбрасывает счетчики токенов для пользователя."""
+    clean_user = (username or "ardont").strip().lower()
+    stats = load_token_stats()
+    if clean_user in stats.get("users", {}):
+        stats["users"][clean_user]["total_tokens"] = 0
+        stats["users"][clean_user]["prompt_tokens"] = 0
+        stats["users"][clean_user]["completion_tokens"] = 0
+        stats["users"][clean_user]["requests_count"] = 0
+        stats["users"][clean_user]["models_usage"] = {}
+        return save_token_stats(stats)
+    return False
+
+def delete_user_stats(username: str) -> bool:
+    """Удаляет запись статистики для пользователя."""
+    clean_user = (username or "ardont").strip().lower()
+    stats = load_token_stats()
+    if clean_user in stats.get("users", {}):
+        del stats["users"][clean_user]
+        return save_token_stats(stats)
+    return False

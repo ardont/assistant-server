@@ -254,14 +254,14 @@ def save_chat_history(username: str, history: List[Dict[str, Any]]) -> None:
 # 🌐 LLM ЗАПРОСЫ И УЧЕТ ТОКЕНОВ
 # ------------------------------------------------------------------------------
 
-def query_llm_text(system_prompt: str, user_prompt: str, username: str = "ardont") -> str:
+def query_llm_text(system_prompt: str, user_prompt: str, username: str = "ardont", model: Optional[str] = None) -> str:
     """Возвращает только текст ответа модели без кортежей токенов."""
-    res = query_gemini_raw(system_prompt, user_prompt, username=username)
+    res = query_gemini_raw(system_prompt, user_prompt, username=username, requested_model=model)
     if isinstance(res, tuple):
         return res[0]
     return str(res)
 
-def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardont") -> Tuple[str, str, int, int]:
+def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardont", requested_model: Optional[str] = None) -> Tuple[str, str, int, int]:
     gemini_keys, _ = get_keys()
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
@@ -272,7 +272,42 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
     if not allowed:
         return f"⚠️ {msg}", "quota_exceeded", 0, 0
 
+    if requested_model and "deepseek" in requested_model.lower():
+        from core.token_tracker import record_token_usage
+        _, deepseek_key = get_keys()
+        if deepseek_key:
+            try:
+                ds_model = "deepseek-chat" if "reasoner" not in requested_model else "deepseek-reasoner"
+                req_payload = {
+                    "model": ds_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    "temperature": 0.7
+                }
+                req = urllib.request.Request(
+                    "https://api.deepseek.com/v1/chat/completions",
+                    data=json.dumps(req_payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json", "Authorization": f"Bearer {deepseek_key}"}
+                )
+                with urllib.request.urlopen(req, context=ssl_context, timeout=40) as r:
+                    res_json = json.loads(r.read().decode("utf-8"))
+                    text = res_json["choices"][0]["message"]["content"]
+                    usage = res_json.get("usage", {})
+                    p_tok = usage.get("prompt_tokens", len(user_prompt)//4)
+                    c_tok = usage.get("completion_tokens", len(text)//4)
+                    record_token_usage(username, ds_model, p_tok, c_tok)
+                    return text, ds_model, p_tok, c_tok
+            except Exception as e:
+                print(f"[DeepSeek Error] {e}. Falling back to Gemini...")
+
     models = ["gemini-flash-latest", "gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-pro-latest"]
+    if requested_model and requested_model in models:
+        models.remove(requested_model)
+        models.insert(0, requested_model)
+    elif requested_model and "pro" in requested_model:
+        models = ["gemini-pro-latest", "gemini-flash-latest"]
     last_err = ""
 
     for key in gemini_keys:
@@ -348,7 +383,7 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
 # 🧠 ГЛАВНЫЙ ОБРАБОТЧИК ДИАЛОГА
 # ------------------------------------------------------------------------------
 
-def process_chat_message(user_message: str, username: str = "ardont", user_name: Optional[str] = None, attached_file_info: Optional[str] = None) -> Dict[str, Any]:
+def process_chat_message(user_message: str, username: str = "ardont", user_name: Optional[str] = None, attached_file_info: Optional[str] = None, model: Optional[str] = None) -> Dict[str, Any]:
     clean_user = (username or "ardont").strip().lower()
     clean_msg, _ = sanitize_text(user_message)
     clean_msg = clean_msg.strip()

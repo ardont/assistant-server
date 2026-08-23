@@ -1208,6 +1208,18 @@
 
             <div class="chat-box">
                 <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:700; font-size:14px;">💬 Чат с AI</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:11px; color:var(--text-muted);">Модель:</label>
+              <select id="chatModelSelect" style="background:#1e293b; color:#38bdf8; border:1px solid #334155; border-radius:6px; padding:4px 8px; font-size:12px; font-weight:600; cursor:pointer; outline:none;">
+                <option value="gemini-flash-latest">⚡ Gemini Flash (Быстрый AI)</option>
+                <option value="gemini-pro-latest">🧠 Gemini Pro (Глубокий анализ)</option>
+                <option value="deepseek-chat">🚀 DeepSeek V3 (Код & Логика)</option>
+                <option value="deepseek-reasoner">🔬 DeepSeek R1 (Reasoning)</option>
+              </select>
+            </div>
                     <div style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                         <span>🦾 Джарвис (Cloud Gemini Flash & Tools Hub)</span>
                     </div>
@@ -1959,7 +1971,9 @@
                 let responseData;
                 if (fileToSend) {
                     const formData = new FormData();
+                    const curModel = document.getElementById('chatModelSelect')?.value || 'gemini-flash-latest';
                     formData.append('message', message);
+                    formData.append('model', curModel);
                     formData.append('file', fileToSend);
                     const res = await fetch('/api/chat', { method: 'POST', body: formData });
                     responseData = await res.json();
@@ -1967,7 +1981,7 @@
                     const res = await fetch('/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: json.dumps ? JSON.stringify({ message }) : JSON.stringify({ message })
+                        body: JSON.stringify({ message, model: document.getElementById('chatModelSelect')?.value || 'gemini-flash-latest' })
                     });
                     responseData = await res.json();
                 }

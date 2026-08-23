@@ -419,7 +419,12 @@ async def handle_chat(request: Request):
         raise HTTPException(status_code=403, detail="Доступ к AI-чату отключен администратором для вашей учетной записи.")
 
     from core.chat_agent import process_chat_message
-    return process_chat_message(message, username=username, attached_file_info=attached_info)
+    selected_model = None
+    if "multipart/form-data" in content_type:
+        selected_model = form.get("model")
+    else:
+        selected_model = body.get("model") if 'body' in locals() else None
+    return process_chat_message(message, username=username, attached_file_info=attached_info, model=selected_model)
 
 @app.get("/api/chat/history")
 async def get_chat_history(request: Request):
@@ -1588,4 +1593,76 @@ async def admin_update_user_vk(request: Request):
     else:
         ok, msg = unbind_vk_id_from_user(target_user)
         
+    return {"status": "ok" if ok else "error", "message": msg}
+
+
+# ------------------------------------------------------------------------------
+# 🔓 ADMIN: UNLIMITED MODE & MODEL MANAGEMENT
+# ------------------------------------------------------------------------------
+
+@app.post("/api/admin/tokens/remove_all_limits")
+async def admin_remove_all_limits(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    from core.token_tracker import remove_all_limits
+    remove_all_limits()
+    return {"status": "ok", "message": "⚡ Все лимиты и квоты успешно сняты! Полный безлимит для всех пользователей."}
+
+@app.post("/api/admin/tokens/update_models")
+async def admin_update_user_models(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    data = await request.json()
+    username = data.get("username", "")
+    allowed_models = data.get("allowed_models", ["*"])
+    from core.token_tracker import update_user_models
+    update_user_models(username, allowed_models)
+    return {"status": "ok", "message": f"Доступные модели для @{username} обновлены: {allowed_models}"}
+
+@app.post("/api/admin/tokens/reset_usage")
+async def admin_reset_tokens(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    data = await request.json()
+    username = data.get("username", "")
+    from core.token_tracker import reset_user_tokens
+    reset_user_tokens(username)
+    return {"status": "ok", "message": f"Счетчик токенов для @{username} сброшен в 0"}
+
+@app.delete("/api/admin/tokens/user/{username}")
+async def admin_delete_user_tokens(username: str, request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    from core.token_tracker import delete_user_stats
+    delete_user_stats(username)
+    return {"status": "ok", "message": f"Запись статистики для @{username} удалена"}
+
+@app.delete("/api/admin/vk/invites/{code}")
+async def admin_delete_invite(code: str, request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    inv_file = CONFIG_DIR / "invites.json"
+    if inv_file.exists():
+        try:
+            invs = json.loads(inv_file.read_text(encoding="utf-8"))
+            if code in invs:
+                del invs[code]
+                inv_file.write_text(json.dumps(invs, ensure_ascii=False, indent=2), encoding="utf-8")
+                return {"status": "ok", "message": f"Инвайт {code} удален"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    return {"status": "error", "message": "Инвайт не найден"}
+
+@app.post("/api/admin/vk/bind_my_vk")
+async def admin_bind_my_vk(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    from core.auth_manager import bind_vk_id_to_user
+    ok, msg = bind_vk_id_to_user("ardont", "816140871")
     return {"status": "ok" if ok else "error", "message": msg}

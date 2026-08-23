@@ -330,7 +330,19 @@ def handle_vk_event(item: dict, token: str, allowed_user_id: str):
 
     # AI query processing
     try:
-        response = ask_chat_agent(query, username="User", user_name="User")
+        # Resolve username from bound VK ID
+        bound_user = "ardont"
+        try:
+            from core.auth_manager import get_user_by_vk_id
+            u_info = get_user_by_vk_id(str(from_id))
+            if u_info:
+                bound_user = u_info.get("username", "ardont")
+            elif str(from_id) == str(allowed_user_id):
+                bound_user = "ardont"
+        except Exception:
+            bound_user = "ardont"
+            
+        response = ask_chat_agent(query, username=bound_user, user_name=bound_user)
         ai_text = response.get("response", "Не удалось получить ответ от AI.")
         
         file_matches = re.findall(r'\[SEND_FILE:([^\]]+)\]', ai_text)
