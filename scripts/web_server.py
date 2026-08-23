@@ -1323,8 +1323,19 @@ def get_current_user_from_req(request: Request) -> Optional[Dict[str, Any]]:
     elif "hs_session" in request.cookies:
         token = request.cookies.get("hs_session", "")
     
-    from core.auth_manager import get_user_by_token
-    return get_user_by_token(token)
+    from core.auth_manager import get_user_by_token, load_users_db
+    user = get_user_by_token(token)
+    if user:
+        return user
+        
+    # Localhost fallback: if client connects directly from localhost/127.0.0.1, auto-authenticate as admin ardont
+    client_ip = request.client.host if request.client else ""
+    if client_ip in ["127.0.0.1", "localhost", "::1"]:
+        db = load_users_db()
+        if "ardont" in db.get("users", {}):
+            return db["users"]["ardont"]
+            
+    return None
 
 @app.get("/admin", response_class=HTMLResponse)
 async def serve_admin_panel():

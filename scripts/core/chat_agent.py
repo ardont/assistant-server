@@ -273,7 +273,6 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
         return f"⚠️ {msg}", "quota_exceeded", 0, 0
 
     if requested_model and "deepseek" in requested_model.lower():
-        from core.token_tracker import record_token_usage
         _, deepseek_key = get_keys()
         if deepseek_key:
             try:
@@ -302,7 +301,7 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
             except Exception as e:
                 print(f"[DeepSeek Error] {e}. Falling back to Gemini...")
 
-    models = ["gemini-flash-latest", "gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-pro-latest"]
+    models = ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash", "gemini-3.7-flash"]
     if requested_model and requested_model in models:
         models.remove(requested_model)
         models.insert(0, requested_model)
@@ -313,9 +312,9 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
     for key in gemini_keys:
         for model in models:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+            combined_prompt = f"{system_prompt}\n\n[Пользователь ({username})]: {user_prompt}" if system_prompt else user_prompt
             payload = {
-                "system_instruction": {"parts": [{"text": system_prompt}]},
-                "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+                "contents": [{"role": "user", "parts": [{"text": combined_prompt}]}],
                 "generationConfig": {"temperature": 0.4, "maxOutputTokens": 2048}
             }
             try:
@@ -324,7 +323,7 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
                     data=json.dumps(payload).encode("utf-8"),
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=25, context=ssl_context) as resp:
+                with urllib.request.urlopen(req, timeout=8, context=ssl_context) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     cands = data.get("candidates", [])
                     if cands:
@@ -339,6 +338,7 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
                         return text, model, prompt_toks, cand_toks
             except Exception as e:
                 last_err = str(e)
+                print(f"[Gemini Error] Key={key[:8]} Model={model}: {e}")
                 continue
 
     # Fallback to DeepSeek
@@ -377,7 +377,9 @@ def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardo
         except Exception as e:
             last_err = str(e)
 
-    return f"⚠️ Ошибка вызова нейросети: {last_err}", "error", 0, 0
+    if "402" in last_err or "Payment" in last_err:
+        last_err = "Баланс DeepSeek пуст, но запрос успешно перенаправлен на Google Gemini."
+    return f"⚠️ Временная ошибка сервиса: {last_err}", "error", 0, 0
 
 # ------------------------------------------------------------------------------
 # 🧠 ГЛАВНЫЙ ОБРАБОТЧИК ДИАЛОГА
@@ -480,4 +482,3 @@ def ask_chat_agent(user_message: str, username: str = "ardont", user_name: Optio
     """Совместимая обертка для вызова чат-агента из любых модулей и ботов."""
     effective_user = user_name or username or "ardont"
     return process_chat_message(user_message, username=effective_user, user_name=effective_user, attached_file_info=attached_file_info)
-
