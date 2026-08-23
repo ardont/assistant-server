@@ -1,0 +1,99 @@
+{
+  "ardont": {
+    "tracks": [
+      {
+        "id": "shad_math",
+        "title": "🎓 Поступление в ШАД (Яндекс) & Математика ML",
+        "category": "Education",
+        "status": "in_progress",
+        "progress_percent": 35,
+        "target_date": "2026-05-01",
+        "focus_area": "Линейная алгебра (SVD, спектральное разложение) & Теория вероятностей",
+        "topics": [
+          {
+            "name": "Линейная алгебра: Собственные значения и квадратичные формы",
+            "completed": true,
+            "notes": "Разобраны базовые теоремы и положительная определенность"
+          },
+          {
+            "name": "Сингулярное разложение (SVD) и псевдообратные матрицы",
+            "completed": false,
+            "notes": "Требуется решение практических задач из вступительных ШАД"
+          },
+          {
+            "name": "Многомерный матанализ: Градиенты, матрицы Гессе и оптимизация",
+            "completed": false,
+            "notes": "Запланировано на следующую неделю"
+          },
+          {
+            "name": "Теория вероятностей: Случайные величины, неравенства Чебышева и ЦПТ",
+            "completed": false,
+            "notes": "В процессе подготовки"
+          },
+          {
+            "name": "Алгоритмы и структуры данных: Графы, ДП и деревья отрезков",
+            "completed": false,
+            "notes": "Практика на LeetCode / Codeforces"
+          }
+        ],
+        "recent_notes": "Разобраны основы положительной определенности матриц. Нужно составить Study Guide по SVD-разложению."
+      },
+      {
+        "id": "homeserver_dev",
+        "title": "⚡ HomeServer AI Hub & Автоматизация Workspace",
+        "category": "Development",
+        "status": "in_progress",
+        "progress_percent": 80,
+        "target_date": "2026-03-15",
+        "focus_area": "Интеграция OmniRoute, VK Bot 24/7, NotebookLM и Antigravity UI",
+        "topics": [
+          {
+            "name": "Мульти-мессенджер ядро (VK LongPoll & Telegram)",
+            "completed": true,
+            "notes": "VK Bot активен, токен и привязка к ardont настроены"
+          },
+          {
+            "name": "Google NotebookLM & Study Guide синтезатор",
+            "completed": true,
+            "notes": "Интегрирован в agent_tools"
+          },
+          {
+            "name": "Веб-интерфейс в стиле Antigravity IDE",
+            "completed": false,
+            "notes": "В процессе финальной сборки"
+          },
+          {
+            "name": "Сетевая папка INBOX и транскрибатор аудио",
+            "completed": true,
+            "notes": "Работает"
+          }
+        ],
+        "recent_notes": "VK Bot успешно настроен. Переходим к интеграции шлюза OmniRoute и обновлению дашборда."
+      },
+      {
+        "id": "crypto_web3",
+        "title": "📈 Data Science & Аналитика в Web3 / Проектах",
+        "category": "Projects",
+        "status": "planned",
+        "progress_percent": 15,
+        "target_date": "2026-06-01",
+        "focus_area": "Парсинг ончейн данных, анализ метрик и автоматические стратегии",
+        "topics": [
+          {
+            "name": "Сбор и очистка исторических данных",
+            "completed": true,
+            "notes": "Скрипты сбора написаны"
+          },
+          {
+            "name": "Бэктестинг статистических моделей на Python",
+            "completed": false,
+            "notes": "В планах"
+          }
+        ],
+        "recent_notes": "Базовые скрипты подготовлены."
+      }
+    ],
+    "daily_focus": "Сингулярное разложение (SVD) для ШАД + Запуск Antigravity дашборда",
+    "last_checkin": "2026-08-23 20:50:37"
+  }
+}

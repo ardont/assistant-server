@@ -2,3244 +2,897 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HomeServer AI Hub • Pro</title>
-    
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#06080f">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeServer AI Hub • Antigravity Workspace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #06080f;
-            --surface: #0e121d;
-            --surface-card: #141a29;
-            --surface-hover: #1b2337;
+            --bg-base: #0a0e17;
+            --bg-surface: #111827;
+            --bg-elevated: #1a2234;
+            --bg-sidebar: #0d121f;
             --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.18);
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.28);
-            --accent-purple: #8b5cf6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #f8fafc;
-            --text-dim: #94a3b8;
-            --text-muted: #64748b;
-            --r-sm: 8px;
-            --r-md: 12px;
-            --r-lg: 18px;
-            --r-full: 9999px;
+            --border-active: rgba(99, 102, 241, 0.4);
+            --accent-indigo: #6366f1;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-purple: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --r-sm: 6px;
+            --r-md: 10px;
+            --r-lg: 14px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
-            color: var(--text);
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            padding: 12px 12px 85px 12px;
-            overflow-x: hidden;
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        /* Top Header */
-        header {
+        /* TOP NAVBAR */
+        .navbar {
+            height: 52px;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 16px;
-            background: rgba(14, 18, 29, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            margin-bottom: 12px;
+            padding: 0 16px;
+            z-index: 50;
         }
-
-        .logo-area {
+        .nav-brand {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 19px;
-            box-shadow: 0 4px 14px var(--primary-glow);
-        }
-
-        .logo-title {
-            font-size: 16px;
             font-weight: 800;
+            font-size: 15px;
             letter-spacing: -0.3px;
         }
-
-        .header-status-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            color: #34d399;
-            background: rgba(16, 185, 129, 0.12);
-            padding: 4px 10px;
-            border-radius: var(--r-full);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            font-weight: 600;
-        }
-
-        .pulse-dot {
-            width: 6px;
-            height: 6px;
-            background: #10b981;
-            border-radius: 50%;
-            animation: pulseGlow 1.8s infinite;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.5; }
-        }
-
-        /* Desktop Tabs Navigation */
-        .desktop-nav {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            background: rgba(14, 18, 29, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 6px;
-            margin-bottom: 14px;
-            user-select: none;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-dim);
-            padding: 10px 6px;
-            border-radius: var(--r-md);
-            font-size: 12.5px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.15s ease;
-            position: relative;
-        }
-
-        .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
-        .tab-btn:active { transform: scale(0.96); }
-
-        .tab-btn.active {
-            background: var(--primary);
+        .nav-brand-badge {
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
             color: #fff;
-            box-shadow: 0 4px 14px var(--primary-glow);
-        }
-
-        .tab-icon { font-size: 15px; }
-
-        .badge-count {
-            background: var(--danger);
-            color: #fff;
-            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 1px 6px;
-            border-radius: var(--r-full);
-            margin-left: 2px;
         }
-
-        /* Mobile Bottom Navigation Bar (Honor & Android Ergonomic) */
-        .mobile-bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10, 14, 23, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
-            z-index: 9999;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(0,0,0,0.3);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
-
-        .mob-tab-btn {
+        .nav-tab-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.04); }
+        .nav-tab-btn.active {
+            color: #fff;
+            background: var(--accent-indigo);
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .model-select {
+            background: var(--bg-elevated);
+            color: var(--accent-cyan);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+        }
+
+        /* MAIN APP LAYOUT (ANTIGRAVITY IDE) */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 52px);
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            padding: 4px 0;
-            font-size: 10px;
-            font-weight: 600;
-            border-radius: var(--r-sm);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.12s ease;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
-
-        .mob-tab-btn .mob-icon { font-size: 18px; }
-        .mob-tab-btn.active { color: #93c5fd; }
-        .mob-tab-btn.active .mob-icon { transform: scale(1.1); filter: drop-shadow(0 2px 8px var(--primary)); }
-
-        @media (max-width: 768px) {
-            .desktop-nav { display: none; }
-            .mobile-bottom-nav { display: grid; }
-            body { padding-bottom: 75px; }
+        .sidebar-section {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
         }
-
-        /* Tab Content */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.15s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cards & Surfaces */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: border-color 0.15s ease;
-        }
-        .card:hover { border-color: var(--border-hover); }
-
-        /* Quick Action Chips */
-        .quick-chips-row {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-            margin-bottom: 12px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .chip-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            padding: 6px 12px;
-            border-radius: var(--r-full);
-            font-size: 11.5px;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.15s ease;
-        }
-        .chip-btn:hover { background: rgba(59, 130, 246, 0.12); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
-        .chip-btn:active { transform: scale(0.96); }
-
-        /* Buttons */
-        .btn {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 9px 15px;
-            border-radius: var(--r-sm);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-height: 38px;
-            text-decoration: none;
-            user-select: none;
-            transition: all 0.15s ease;
-        }
-        .btn:hover { filter: brightness(1.08); box-shadow: 0 4px 12px var(--primary-glow); }
-        .btn:active { transform: scale(0.97); }
-        .btn-green { background: var(--success); }
-        .btn-green:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .btn-purple { background: var(--accent-purple); }
-        .btn-purple:hover { box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
-        .btn-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .btn-red:hover, .btn-red:active { background: var(--danger); color: #fff; }
-        .btn-subtle { background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid var(--border); }
-        .btn-subtle:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-        .btn-subtle:active { transform: scale(0.97); }
-
-        /* Inputs */
-        .input, .textarea {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            border-radius: var(--r-sm);
-            padding: 10px 12px;
-            color: var(--text);
-            font-size: 13.5px;
-            font-family: inherit;
-        }
-        .textarea { min-height: 75px; resize: vertical; }
-        .input:focus, .textarea:focus { outline: none; border-color: var(--primary); }
-
-        /* Focus Hero Card */
-        .focus-hero {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.14));
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: var(--r-lg);
-            padding: 16px;
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        .focus-badge {
+        .sidebar-title {
             font-size: 11px;
             font-weight: 700;
-            color: #93c5fd;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        .focus-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
-        .focus-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.4; }
-
-        /* Pomodoro Focus Timer Widget */
-        .pomodoro-box {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 14px;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .pomo-time {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 24px;
-            font-weight: 800;
-            color: #93c5fd;
-            letter-spacing: 1px;
-        }
-
-        /* Task Items */
-        .task-item {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 14px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        .task-item:hover { border-color: var(--border-hover); background: var(--surface-hover); }
-        .task-item:active { transform: scale(0.98); }
-        .task-item.done {
-            opacity: 0.6;
-            border-color: rgba(16, 185, 129, 0.3);
-            background: rgba(16, 185, 129, 0.05);
-        }
-        .task-checkbox {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            border: 2px solid var(--border-hover);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            color: #fff;
-            flex-shrink: 0;
-            margin-top: 1px;
-            background: rgba(0,0,0,0.2);
-            transition: all 0.15s ease;
-        }
-        .task-item.done .task-checkbox {
-            background: var(--success);
-            border-color: var(--success);
-        }
-        .task-item-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-        .task-item.done .task-item-title { text-decoration: line-through; color: var(--text-dim); }
-        .task-item-desc { font-size: 12px; color: var(--text-muted); }
-
-        .progress-bar-bg {
-            background: rgba(255,255,255,0.06);
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            background: linear-gradient(90deg, var(--primary), var(--accent-purple));
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
-        /* Proposals */
-        .proposal-card {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 14px;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
             margin-bottom: 10px;
-        }
-        .proposal-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
+        }
+
+        /* TRACKS CARD */
+        .track-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        .track-card:hover {
+            border-color: var(--border-active);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
             margin-bottom: 6px;
         }
-        .proposal-filename { font-weight: 700; font-size: 14px; word-break: break-all; }
-        .proposal-category {
+        .progress-bar-bg {
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+            border-radius: 3px;
+        }
+        .track-focus-text {
             font-size: 11px;
-            padding: 2px 8px;
-            border-radius: var(--r-full);
-            background: rgba(59, 130, 246, 0.15);
-            color: #93c5fd;
-            font-weight: 600;
-        }
-        .proposal-reason { font-size: 12.5px; color: var(--text-dim); margin-bottom: 8px; }
-        .proposal-dest {
-            font-size: 12px;
             color: var(--text-muted);
-            background: rgba(0,0,0,0.25);
-            padding: 6px 10px;
-            border-radius: var(--r-sm);
-            margin-bottom: 10px;
-            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .proposal-actions { display: flex; gap: 8px; }
 
-        /* Chat Layout */
-        .chat-box {
+        /* FILE TREE */
+        .tree-node {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+        }
+        .tree-node:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .tree-node.active { background: rgba(99, 102, 241, 0.15); color: #93c5fd; }
+        .tree-indent { margin-left: 14px; border-left: 1px dashed rgba(255,255,255,0.1); padding-left: 8px; }
+
+        /* CENTER CONTENT AREA */
+        .main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            height: 520px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
+            background: var(--bg-base);
+            overflow: hidden;
+            position: relative;
+        }
+        .view-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
             overflow: hidden;
         }
-        .chat-header {
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border);
+        .view-panel.active { display: flex; }
+
+        /* CHAT VIEW */
+        .chat-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+            overflow: hidden;
         }
         .chat-messages {
             flex: 1;
-            padding: 12px;
+            padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            -webkit-overflow-scrolling: touch;
+            gap: 16px;
         }
-        .msg {
-            max-width: 88%;
-            padding: 10px 14px;
-            border-radius: 14px;
-            font-size: 13.5px;
-            line-height: 1.45;
-            word-break: break-word;
+        .message-bubble {
+            max-width: 820px;
+            padding: 12px 18px;
+            border-radius: var(--r-lg);
+            font-size: 14px;
+            line-height: 1.6;
         }
-        .msg.user {
+        .message-bubble.user {
             align-self: flex-end;
-            background: var(--primary);
+            background: var(--accent-indigo);
             color: #fff;
-            border-bottom-right-radius: 2px;
+            border-bottom-right-radius: 4px;
         }
-        .msg.assistant {
+        .message-bubble.assistant {
             align-self: flex-start;
-            background: var(--surface-card);
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-bottom-left-radius: 2px;
+            border-bottom-left-radius: 4px;
         }
-        .msg-action {
-            margin-top: 6px;
-            padding: 4px 8px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
+        .message-bubble pre {
+            background: #080c14;
+            padding: 10px;
             border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            border: 1px solid var(--border);
         }
-        .chat-input-row {
-            padding: 8px 10px;
-            background: rgba(0,0,0,0.3);
+        .message-bubble code {
+            font-family: var(--font-mono);
+            background: rgba(255,255,255,0.08);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* QUICK PILLS */
+        .quick-pills {
+            display: flex;
+            gap: 8px;
+            padding: 8px 20px;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border);
+        }
+        .quick-pill-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .quick-pill-btn:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        /* CHAT INPUT AREA */
+        .chat-input-bar {
+            padding: 14px 20px 18px;
+            background: var(--bg-surface);
             border-top: 1px solid var(--border);
             display: flex;
-            gap: 6px;
+            gap: 10px;
+            align-items: flex-end;
         }
-
-        /* Dropzone Label */
-        .dropzone-label {
-            display: block;
-            background: var(--surface);
-            border: 2px dashed rgba(59, 130, 246, 0.4);
-            border-radius: var(--r-lg);
-            padding: 24px 16px;
-            text-align: center;
+        .chat-textarea {
+            flex: 1;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            color: var(--text-main);
+            padding: 10px 14px;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            resize: none;
+            height: 44px;
+            max-height: 120px;
+            outline: none;
+        }
+        .chat-textarea:focus { border-color: var(--accent-indigo); }
+        .btn-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            margin-bottom: 14px;
-            transition: all 0.15s ease;
+            font-size: 16px;
+            transition: all 0.15s;
         }
-        .dropzone-label:active { background: rgba(59, 130, 246, 0.1); }
-
-        /* Tasks Terminal */
-        .terminal {
-            background: #000;
-            color: #34d399;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
-            padding: 12px;
-            border-radius: var(--r-md);
-            height: 160px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-
-        /* Diagnostics Widget Grid */
-        .diag-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .diag-card {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 10px;
-            text-align: center;
-        }
-        .diag-val { font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-        .diag-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-        @media (max-width: 600px) {
-            .diag-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Project Items */
-        .project-item {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-            background: rgba(0,0,0,0.25);
-            padding: 6px 8px;
-            border-radius: var(--r-sm);
-            border: 1px solid var(--border);
-        }
-        .project-item input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 13px; outline: none; }
-
-        /* Toast Alert */
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            right: 16px;
-            left: 16px;
-            max-width: 360px;
-            margin: 0 auto;
-            background: var(--surface-card);
-            border: 1px solid var(--success);
-            color: white;
-            padding: 11px 16px;
-            border-radius: 14px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            opacity: 0;
-            transform: translateY(15px);
-            transition: all 0.2s ease;
-            pointer-events: none;
-            z-index: 10000;
-            display: none;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); display: block; }
-        .toast.error { border-color: var(--danger); }
-    
-        /* ☀️ СВЕТЛАЯ ТЕМА (HIGH CONTRAST & WCAG COMPLIANT) */
-        [data-theme="light"] {
-            --bg: #f1f5f9;
-            --surface: #ffffff;
-            --surface-card: #ffffff;
-            --surface-hover: #e2e8f0;
-            --border: #cbd5e1;
-            --border-hover: #94a3b8;
-            --primary: #2563eb;
-            --primary-glow: rgba(37, 99, 235, 0.25);
-            --accent-purple: #7c3aed;
-            --success: #059669;
-            --warning: #d97706;
-            --danger: #dc2626;
-            --text: #0f172a;
-            --text-dim: #334155;
-            --text-muted: #64748b;
-        }
-
-        [data-theme="light"] body {
-            background-color: #f8fafc;
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.04) 0%, transparent 40%);
-            color: #0f172a;
-        }
-
-        [data-theme="light"] header {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        }
-
-        [data-theme="light"] .logo-title {
-            color: #0f172a;
-        }
-
-        /* Навигационные кнопки / вкладки */
-        [data-theme="light"] nav {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        }
-
-        [data-theme="light"] .tab-btn,
-        [data-theme="light"] .mob-tab-btn {
-            color: #334155;
+        .btn-icon:hover { background: rgba(255,255,255,0.08); }
+        .btn-send {
+            background: var(--accent-indigo);
+            border: none;
+            color: #fff;
             font-weight: 700;
-        }
-
-        [data-theme="light"] .tab-btn:hover,
-        [data-theme="light"] .mob-tab-btn:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        [data-theme="light"] .tab-btn.active,
-        [data-theme="light"] .mob-tab-btn.active {
-            background: #2563eb;
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-        }
-
-        /* Карточки */
-        [data-theme="light"] .card,
-        [data-theme="light"] .focus-hero,
-        [data-theme="light"] .pomodoro-box,
-        [data-theme="light"] .chat-box,
-        [data-theme="light"] .proposal-card,
-        [data-theme="light"] .script-task-card {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #0f172a;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Карточки метрик (Диагностика) */
-        [data-theme="light"] .diag-card {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        [data-theme="light"] #diagCpu { color: #1d4ed8 !important; }
-        [data-theme="light"] #diagRam { color: #6d28d9 !important; }
-        [data-theme="light"] #diagDisk { color: #047857 !important; }
-        [data-theme="light"] #diagUptime { color: #b45309 !important; }
-        [data-theme="light"] .diag-label { color: #334155; font-weight: 700; }
-
-        /* Поля ввода */
-        [data-theme="light"] input,
-        [data-theme="light"] select,
-        [data-theme="light"] textarea,
-        [data-theme="light"] .input {
-            background: #ffffff;
-            color: #0f172a;
-            border: 1px solid #94a3b8;
-            font-weight: 500;
-        }
-
-        [data-theme="light"] input::placeholder,
-        [data-theme="light"] textarea::placeholder {
-            color: #64748b;
-        }
-
-        [data-theme="light"] input:focus,
-        [data-theme="light"] select:focus,
-        [data-theme="light"] textarea:focus {
-            background: #ffffff;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
-        }
-
-        /* Кнопки */
-        [data-theme="light"] .btn-subtle {
-            background: #e2e8f0;
-            color: #0f172a;
-            border: 1px solid #cbd5e1;
-            font-weight: 700;
-        }
-
-        [data-theme="light"] .btn-subtle:hover {
-            background: #cbd5e1;
-            color: #000000;
-        }
-
-        [data-theme="light"] .chip-btn {
-            background: #ffffff;
-            color: #1e293b;
-            border: 1px solid #cbd5e1;
-            font-weight: 600;
-        }
-
-        [data-theme="light"] .chip-btn:hover {
-            background: #f1f5f9;
-            border-color: #2563eb;
-            color: #2563eb;
-        }
-
-        /* Чат */
-        [data-theme="light"] .chat-messages {
-            background: #f8fafc;
-            border-radius: var(--r-sm);
-        }
-
-        [data-theme="light"] .chat-msg.assistant {
-            background: #ffffff;
-            color: #0f172a;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-        }
-
-        [data-theme="light"] .chat-msg.user {
-            background: #2563eb;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        /* VS Code Explorer в светлой теме */
-        [data-theme="light"] .vsc-explorer {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-        }
-
-        [data-theme="light"] .vsc-toolbar {
-            background: #f1f5f9;
-            border-bottom: 1px solid #cbd5e1;
-            color: #0f172a;
-        }
-
-        [data-theme="light"] .vsc-file-name {
-            color: #0f172a;
-            font-weight: 600;
-        }
-
-        [data-theme="light"] .vsc-file-meta {
-            color: #64748b;
-        }
-
-        [data-theme="light"] .vsc-item:hover {
-            background: #f1f5f9;
-        }
-
-        /* Терминал (всегда глубокий читаемый фон) */
-        .terminal,
-        [data-theme="light"] .terminal {
-            background: #0b0f19 !important;
-            color: #4ade80 !important;
-            border: 1px solid #334155 !important;
-            font-family: 'JetBrains Mono', Consolas, monospace;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-        }
-
-        /* Заголовки и текст */
-        [data-theme="light"] .focus-title { color: #0f172a; }
-        [data-theme="light"] .focus-desc { color: #334155; }
-        [data-theme="light"] .pomo-time { color: #1d4ed8; }
-
-/* 🌲 VS CODE STYLE FILE TREE EXPLORER */
-        .vsc-explorer {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            padding: 0 18px;
             border-radius: var(--r-md);
-            overflow: hidden;
-            font-family: 'JetBrains Mono', Consolas, monospace;
-            font-size: 12.5px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .vsc-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        [data-theme="light"] .vsc-toolbar {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .vsc-tree {
-            padding: 8px 0;
-            max-height: 520px;
-            overflow-y: auto;
-        }
-
-        .vsc-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 12px;
+            height: 44px;
             cursor: pointer;
-            user-select: none;
-            transition: background 0.12s ease;
-            border-radius: 4px;
-            margin: 1px 4px;
-        }
-
-        .vsc-item:hover {
-            background: var(--surface-hover);
-        }
-
-        .vsc-item-left {
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+        .btn-send:hover { background: #4f46e5; }
+
+        /* STUDY GUIDES VIEW */
+        .study-view {
+            display: flex;
+            height: 100%;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
-
-        .vsc-caret {
-            display: inline-block;
-            width: 14px;
-            font-size: 10px;
-            color: var(--text-dim);
-            transition: transform 0.15s ease;
-            text-align: center;
-        }
-
-        .vsc-folder.open > .vsc-item .vsc-caret {
-            transform: rotate(90deg);
-        }
-
-        .vsc-children {
-            display: none;
-            padding-left: 18px;
-            border-left: 1px dashed rgba(255, 255, 255, 0.08);
-            margin-left: 14px;
-        }
-
-        [data-theme="light"] .vsc-children {
-            border-left-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .vsc-folder.open > .vsc-children {
-            display: block;
-        }
-
-        .vsc-file-icon {
-            font-size: 13px;
-        }
-
-        .vsc-file-name {
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .vsc-file-meta {
-            font-size: 10.5px;
-            color: var(--text-muted);
-            margin-left: 8px;
-        }
-
-        .vsc-actions {
+        .study-sidebar {
+            width: 320px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: 16px;
             display: flex;
-            align-items: center;
-            gap: 4px;
-            opacity: 0.85;
-        }
-
-        .vsc-actions:hover {
-            opacity: 1;
-        }
-
-        /* Карточки скриптов */
-        .script-task-card {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             gap: 12px;
-            transition: transform 0.15s ease, border-color 0.15s ease;
+            overflow-y: auto;
         }
-
-        .script-task-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-1px);
+        .study-preview {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+            background: var(--bg-base);
+            font-size: 14px;
+            line-height: 1.7;
         }
+        .study-preview h1 { font-size: 22px; color: var(--accent-cyan); margin-bottom: 12px; }
+        .study-preview h2 { font-size: 18px; color: #93c5fd; margin: 18px 0 8px; }
+        .study-preview h3 { font-size: 15px; color: #cbd5e1; margin: 14px 0 6px; }
 
+        /* TOAST */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--accent-emerald);
+            padding: 10px 18px;
+            border-radius: var(--r-md);
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
     </style>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
-        // --- Remote Channels & Messengers Status Poller ---
-        async function loadRemoteChannels() {
-            try {
-                const res = await fetch('/api/remote/status');
-                if (!res.ok) return;
-                const data = await res.json();
-                
-                // Update Cloudflare Banner
-                const cfBanner = document.getElementById('cloudflareBanner');
-                if (cfBanner) {
-                    if (data.cloudflare_active && data.cloudflare_url) {
-                        cfBanner.style.display = 'block';
-                        document.getElementById('cfUrlText').textContent = data.cloudflare_url;
-                        document.getElementById('cfUrlText').href = data.cloudflare_url;
-                    } else {
-                        cfBanner.style.display = 'none';
-                    }
-                }
-
-                // Update Bot Status Cards
-                if (data.bots) {
-                    if (document.getElementById('vkBotStatus')) {
-                        document.getElementById('vkBotStatus').textContent = data.bots.vk.status_text;
-                    }
-                    if (document.getElementById('maxBotStatus')) {
-                        document.getElementById('maxBotStatus').textContent = data.bots.max.status_text;
-                    }
-                    if (document.getElementById('tgBotStatus')) {
-                        document.getElementById('tgBotStatus').textContent = data.bots.telegram.status_text;
-                    }
-                }
-            } catch(e) {}
-        }
-        setInterval(loadRemoteChannels, 5000);
-        setTimeout(loadRemoteChannels, 1000);
-
-        window.copyCfUrl = function() {
-            const url = document.getElementById('cfUrlText').textContent;
-            if (url && url.startsWith('http')) {
-                navigator.clipboard.writeText(url);
-                alert('Скопировано в буфер: ' + url);
-            }
-        };
-
-        window.saveRemoteBotTokens = async function(e) {
-            e.preventDefault();
-            const vkToken = document.getElementById('inputVkToken').value.trim();
-            const vkUserId = document.getElementById('inputVkUserId').value.trim();
-            const vkProxy = document.getElementById('inputVkProxy') ? document.getElementById('inputVkProxy').value.trim() : '';
-            const maxToken = document.getElementById('inputMaxToken').value.trim();
-            const maxProxy = document.getElementById('inputMaxProxy') ? document.getElementById('inputMaxProxy').value.trim() : '';
-            const tgToken = document.getElementById('inputTgToken').value.trim();
-            const tgUserId = document.getElementById('inputTgUserId').value.trim();
-
-            const res = await fetch('/api/remote/save_tokens', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    vk_token: vkToken || null,
-                    vk_user_id: vkUserId || null,
-                    vk_proxy: vkProxy || null,
-                    max_token: maxToken || null,
-                    max_proxy: maxProxy || null,
-                    tg_token: tgToken || null,
-                    tg_user_id: tgUserId || null
-                })
-            });
-            const data = await res.json();
-            alert(data.message || 'Токены сохранены!');
-            loadRemoteChannels();
-        };
-
-</script>
 </head>
 <body>
 
-<!-- 🛡️ FULL-SCREEN MANDATORY AUTHENTICATION GATE -->
-<div id="fullAuthGate" style="position:fixed; top:0; left:0; right:0; bottom:0; background:radial-gradient(circle at 50% 30%, #1a2238 0%, #0a0e17 80%); z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:rgba(17, 24, 39, 0.9); border:1px solid rgba(255,255,255,0.12); border-radius:20px; width:100%; max-width:400px; padding:32px 24px; box-shadow:0 25px 60px rgba(0,0,0,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#f3f4f6; text-align:center;">
-        
-        <div style="width:54px; height:54px; border-radius:14px; background:linear-gradient(135deg, #6366f1, #06b6d4); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 16px; box-shadow:0 0 20px rgba(99,102,241,0.5);">
-            ⚡
-        </div>
-        
-        <h2 style="font-size:20px; font-weight:800; margin-bottom:6px; background:linear-gradient(90deg, #fff, #93c5fd); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-            HomeServer AI Hub
-        </h2>
-        <p style="font-size:12.5px; color:#9ca3af; margin-bottom:24px; line-height:1.4;">
-            Пожалуйста, войдите в систему или зарегистрируйтесь для доступа к рабочей среде.
-        </p>
-
-        <!-- Auth Tabs -->
-        <div style="display:flex; gap:6px; background:rgba(0,0,0,0.3); padding:4px; border-radius:10px; margin-bottom:20px;">
-            <button type="button" id="tabAuthLoginBtn" onclick="switchAuthGateTab('login')" style="flex:1; background:rgba(255,255,255,0.1); border:none; color:#fff; padding:8px; border-radius:8px; font-weight:600; font-size:12.5px; cursor:pointer;">
-                Вход
-            </button>
-            <button type="button" id="tabAuthRegBtn" onclick="switchAuthGateTab('register')" style="flex:1; background:none; border:none; color:#9ca3af; padding:8px; border-radius:8px; font-weight:600; font-size:12.5px; cursor:pointer;">
-                Регистрация
-            </button>
+    <!-- TOP NAVBAR -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <span>🌌 HomeServer</span>
+            <span class="nav-brand-badge">JARVIS 24/7</span>
         </div>
 
-        <!-- Login Form -->
-        <form id="gateLoginForm" onsubmit="submitGateLogin(event)">
-            <div style="margin-bottom:12px; text-align:left;">
-                <label style="font-size:11.5px; color:#9ca3af; font-weight:500; display:block; margin-bottom:4px;">Логин (username):</label>
-                <input type="text" id="gateLoginUser" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px 12px; color:#fff; font-size:14px; outline:none;" placeholder="ardont / maxim">
-            </div>
-            <div style="margin-bottom:16px; text-align:left;">
-                <label style="font-size:11.5px; color:#9ca3af; font-weight:500; display:block; margin-bottom:4px;">Пароль:</label>
-                <input type="password" id="gateLoginPwd" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px 12px; color:#fff; font-size:14px; outline:none;" placeholder="пароль...">
-            </div>
-            <div id="gateErrorMsg" style="color:#f43f5e; font-size:12px; margin-bottom:14px; display:none;"></div>
-            <button type="submit" id="btnGateSubmitLogin" style="width:100%; background:linear-gradient(135deg, #6366f1, #06b6d4); border:none; border-radius:10px; padding:12px; color:#fff; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 4px 16px rgba(99,102,241,0.4);">
-                Войти в систему
-            </button>
-        </form>
-
-        <!-- Register Form -->
-        <form id="gateRegForm" onsubmit="submitGateRegister(event)" style="display:none;">
-            <div style="margin-bottom:10px; text-align:left;">
-                <label style="font-size:11.5px; color:#9ca3af; font-weight:500; display:block; margin-bottom:4px;">Желаемый логин:</label>
-                <input type="text" id="gateRegUser" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" placeholder="например: alex">
-            </div>
-            <div style="margin-bottom:10px; text-align:left;">
-                <label style="font-size:11.5px; color:#9ca3af; font-weight:500; display:block; margin-bottom:4px;">Пароль:</label>
-                <input type="password" id="gateRegPwd" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" placeholder="не менее 4 символов">
-            </div>
-            <div style="margin-bottom:16px; text-align:left;">
-                <label style="font-size:11.5px; color:#9ca3af; font-weight:500; display:block; margin-bottom:4px;">Ваше имя:</label>
-                <input type="text" id="gateRegName" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" placeholder="Алексей">
-            </div>
-            <div id="gateRegErrorMsg" style="color:#f43f5e; font-size:12px; margin-bottom:12px; display:none;"></div>
-            <button type="submit" style="width:100%; background:linear-gradient(135deg, #10b981, #06b6d4); border:none; border-radius:10px; padding:12px; color:#fff; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 4px 16px rgba(16,185,129,0.4);">
-                Зарегистрироваться
-            </button>
-        </form>
-    </div>
-</div>
-
-    <div class="container">
-
-        <!-- REMOTE CHANNELS & CLOUDFLARE BANNER -->
-        <div id="cloudflareBanner" class="card" style="display: none; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(59, 130, 246, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 24px;">🌐</span>
-                    <div>
-                        <div style="font-weight: 700; font-size: 13px; color: #fbbf24;">Удаленный доступ Cloudflare HTTPS активен!</div>
-                        <div style="font-size: 11px; color: var(--text-dim);">Доступ к веб-панели со смартфона без VPN и Tailscale:</div>
-                        <a id="cfUrlText" href="#" target="_blank" style="font-size: 13px; font-weight: 600; color: #60a5fa; text-decoration: underline; word-break: break-all;"></a>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-subtle" onclick="copyCfUrl()" style="min-height: 30px; padding: 4px 12px; font-size: 11px;">
-                    📋 Скопировать ссылку
-                </button>
-            </div>
-        </div>
-
-        <!-- Minimal Header -->
-        <header>
-            <div class="logo-area">
-                <div class="logo-icon">⚡</div>
-                <div>
-                    <div class="logo-title">HomeServer AI Hub</div>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;" id="headerAuthContainer">
-                <a href="/admin" id="btnAdminPanelNav" class="btn btn-subtle" style="display:none; min-height: 32px; padding: 4px 10px; font-size: 12px; border-color: rgba(168, 85, 247, 0.4); color: #c084fc; text-decoration: none;">
-                    👑 Админ-панель
-                </a>
-                <div id="userBadgeNav" style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; border:1px solid rgba(255,255,255,0.1);">
-                    <span id="navUserName">👤 ardont</span>
-                </div>
-                <button type="button" id="btnAuthAction" class="btn btn-subtle" onclick="handleAuthButtonClick()" style="min-height: 32px; padding: 4px 10px; font-size: 12px;">
-                    🚪 Выйти
-                </button>
-
-                <button type="button" class="btn btn-subtle theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Сменить тему (Светлая / Тёмная)" style="min-height: 32px; padding: 4px 10px; font-size: 12px;">
-                    <span id="themeIcon">🌙</span>
-                    <span id="themeLabel">Тёмная</span>
-                </button>
-
-                <div class="header-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>Онлайн (RAM)</span>
-                </div>
-                <button type="button" class="btn btn-subtle" onclick="triggerPhoneNotification()" style="min-height: 32px; padding: 4px 10px; font-size: 12px;">
-                    🔔 Пуш
-                </button>
-            </div>
-        </header>
-
-        <!-- Desktop Navigation Tabs -->
-        <nav class="desktop-nav">
-            <button type="button" class="tab-btn active" data-tab="plan" onclick="switchTab('plan')">
-                <span class="tab-icon">🎯</span>
-                <span>План</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="chat" onclick="switchTab('chat')">
-                <span class="tab-icon">💬</span>
-                <span>Чат</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="inbox" onclick="switchTab('inbox')">
-                <span class="tab-icon">📥</span>
-                <span>INBOX</span>
-                <span class="badge-count" id="inboxBadge" style="display: none;">0</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="explorer" onclick="switchTab('explorer')">
-                <span class="tab-icon">📁</span>
-                <span>Файлы</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="tasks" onclick="switchTab('tasks')">
-                <span class="tab-icon">⚡</span>
-                <span>Скрипты</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
-                <span class="tab-icon">📅</span>
-                <span>Календарь</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="profile" onclick="switchTab('profile')">
-                <span class="tab-icon">👤</span>
-                <span>Настройки</span>
-            </button>
+        <nav class="nav-tabs">
+            <button class="nav-tab-btn active" data-view="view-chat">💬 Чат с AI</button>
+            <button class="nav-tab-btn" data-view="view-study">📚 Учебный Центр</button>
+            <button class="nav-tab-btn" data-view="view-tracks">🎯 Треки Развития</button>
+            <button class="nav-tab-btn" data-view="view-inbox">📥 INBOX Файлы</button>
+            <a href="/admin" target="_blank" class="nav-tab-btn" style="text-decoration:none;">⚙️ Админка</a>
         </nav>
 
-        <!-- 1. TAB: PLAN -->
-        <div id="tab-plan" class="tab-content active">
-            <!-- Focus Hero -->
-            <div class="focus-hero">
-                <div class="focus-badge">🎯 Фокус на сегодня:</div>
-                <div class="focus-title" id="planTopic">Линейная алгебра: Собственные значения и положительная определенность матриц</div>
-                <div class="focus-desc" id="planOverview">Ключевая тема для оптимизации и алгоритмов ML (PCA, SVD, квадратичные формы). Фокус на свойствах и решении типовых задач.</div>
-            </div>
-
-            <!-- Pomodoro Timer Box -->
-            <div class="pomodoro-box">
-                <div>
-                    <div style="font-size: 11px; font-weight: 700; color: #93c5fd; text-transform: uppercase;">🍅 Таймер Фокуса (20 мин)</div>
-                    <div class="pomo-time" id="pomoDisplay">20:00</div>
-                </div>
-                <div style="display: flex; gap: 6px;">
-                    <button type="button" class="btn btn-purple" id="pomoBtn" onclick="togglePomodoro()" style="min-height: 34px; padding: 4px 14px; font-size: 12px;">
-                        ▶️ Старт
-                    </button>
-                    <button type="button" class="btn btn-subtle" onclick="resetPomodoro()" style="min-height: 34px; padding: 4px 10px; font-size: 12px;">
-                        ↺
-                    </button>
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="font-size: 13px; font-weight: 700; color: var(--text-dim);">Микро-шаги на сегодня (по 15–20 мин):</div>
-                <button type="button" class="btn btn-subtle" onclick="refreshDailyPlan(true)" style="min-height: 28px; padding: 4px 10px; font-size: 11px;">
-                    🔄 Новый план ИИ
-                </button>
-            </div>
-
-            <div id="planTasksContainer"></div>
-
-            <div class="card" style="margin-top: 14px;">
-                <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">📈 Динамика и прогресс по направлениям</div>
-                <div id="roadmapContainer"></div>
+        <div class="nav-controls">
+            <select id="modelSelector" class="model-select">
+                <option value="gemini-3.1-flash-lite">⚡ Gemini 3.1 Flash Lite</option>
+                <option value="gemini-3.5-flash">🚀 Gemini 3.5 Flash</option>
+                <option value="gemini-3.7-flash">🧠 Gemini 3.7 Flash</option>
+                <option value="gemini-2.5-pro">🔬 Gemini 2.5 Pro</option>
+            </select>
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                <span id="serverUptime">Online</span>
             </div>
         </div>
+    </header>
 
-        <!-- 2. TAB: CHAT -->
-        <div id="tab-chat" class="tab-content">
-            <!-- Quick Chips for Instant Jarvis Prompts -->
-            <div class="quick-chips-row" style="flex-wrap: wrap;">
-                <button type="button" class="chip-btn" onclick="sendQuickPrompt('🎯 Напомни мой план на сегодня')">🎯 План на день</button>
-                <button type="button" class="chip-btn" onclick="sendQuickPrompt('🌐 Найди в интернете свежие материалы и новости по теме: ')">🌐 Web Поиск</button>
-                <button type="button" class="chip-btn" onclick="data-perm="can_execute_scripts" onclick="sendQuickPrompt('🎯 Собери контакты и лиды (Email, телефон, Telegram) с сайта: ')">🎯 LeadGen / Контакты</button>
-                <button type="button" class="chip-btn" onclick="data-perm="can_execute_scripts" onclick="sendQuickPrompt('🛡️ Сделай OSINT-разведку домена: ')">🛡️ OSINT</button>
-                <button type="button" class="chip-btn" onclick="data-perm="can_execute_scripts" onclick="sendQuickPrompt('🐙 Склонируй GitHub репозиторий: ')">🐙 Git Clone</button>
-                <button type="button" class="chip-btn" onclick="data-perm="can_execute_scripts" onclick="sendQuickPrompt('🧠 Проведи глубокое исследование (Deep Research) и сохрани отчет по теме: ')">🧠 Deep Research</button>
-                <button type="button" class="chip-btn" onclick="data-perm="can_storage" onclick="sendQuickPrompt('🔍 Проверь входящие файлы в INBOX')">📂 INBOX</button>
-            </div>
-
-            <div class="chat-box">
-                <div class="chat-header">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-weight:700; font-size:14px;">💬 Чат с AI</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <label style="font-size:11px; color:var(--text-muted);">Модель:</label>
-              <select id="chatModelSelect" style="background:#1e293b; color:#38bdf8; border:1px solid #334155; border-radius:6px; padding:4px 8px; font-size:12px; font-weight:600; cursor:pointer; outline:none;">
-                <option value="gemini-flash-latest">⚡ Gemini Flash (Быстрый AI)</option>
-                <option value="gemini-pro-latest">🧠 Gemini Pro (Глубокий анализ)</option>
-                <option value="deepseek-chat">🚀 DeepSeek V3 (Код & Логика)</option>
-                <option value="deepseek-reasoner">🔬 DeepSeek R1 (Reasoning)</option>
-              </select>
-            </div>
-                    <div style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                        <span>🦾 Джарвис (Cloud Gemini Flash & Tools Hub)</span>
-                    </div>
-                    <button type="button" class="btn btn-subtle" onclick="clearChat()" style="min-height: 24px; padding: 2px 8px; font-size: 11px;">Очистить</button>
+    <!-- WORKSPACE -->
+    <div class="workspace">
+        
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <span>🎯 Треки @ardont</span>
+                    <button id="btnRefreshTracks" style="background:none; border:none; color:var(--accent-cyan); cursor:pointer; font-size:12px;">🔄</button>
                 </div>
-                <div class="chat-messages" id="chatMessages"></div>
-                <form class="chat-input-row" onsubmit="handleSendChat(event)">
-                    <input type="text" id="chatInput" class="input" placeholder="Напишите сообщение или команду..." autocomplete="off">
-                    <button type="submit" class="btn" style="min-height: 38px; width: 44px; padding: 0;">➔</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- 3. TAB: INBOX -->
-        <div id="tab-inbox" class="tab-content">
-            <label class="dropzone-label" for="fileInput">
-                <div style="font-size: 28px; margin-bottom: 6px;">📥</div>
-                <div style="font-weight: 700; font-size: 14px;">Нажмите для загрузки файла</div>
-                <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Или отправьте в сетевую папку \\\\192.168.50.108\\INBOX</div>
-                <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
-            </label>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div style="font-size: 13px; font-weight: 700;">Предложения сортировки (с защитой PII):</div>
-                <button type="button" class="btn btn-subtle" onclick="triggerInboxScan()" style="min-height: 28px; padding: 4px 10px; font-size: 11px;">
-                    🔍 Проверить INBOX
-                </button>
-            </div>
-
-            <div id="proposalsList"></div>
-        </div>
-
-        <!-- 4. TAB: EXPLORER (VS Code Style File Tree) -->
-        <div id="tab-explorer" class="tab-content">
-            <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.12)); border-color: rgba(16, 185, 129, 0.3); margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 800; font-size: 14px; color: #6ee7b7;">📱 Мобильное приложение Android</div>
-                        <div style="font-size: 12px; color: var(--text-dim);">Пакет инструментов и APK для смартфона</div>
-                    </div>
-                    <a href="/api/download/file?path=archive/active_projects/HomeServer_Laptop2_RDP_Tools.zip" class="btn btn-green" style="font-size: 12px; min-height: 32px; padding: 4px 12px;">
-                        📦 Скачать RDP Tools (.zip)
-                    </a>
+                <div id="tracksSidebarContainer">
+                    <div style="font-size:12px; color:var(--text-muted);">Загрузка направлений...</div>
                 </div>
             </div>
 
-            <!-- VS Code Explorer Container -->
-            <div class="vsc-explorer">
-                <div class="vsc-toolbar">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-weight: 700; font-size: 13px;">📁 ПРОВОДНИК ФАЙЛОВ И ПАПОК (VS CODE)</span>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="btn btn-subtle" onclick="expandAllVscTree()" style="min-height: 26px; padding: 2px 8px; font-size: 11px;" title="Развернуть все">➕ Развернуть</button>
-                        <button type="button" class="btn btn-subtle" onclick="collapseAllVscTree()" style="min-height: 26px; padding: 2px 8px; font-size: 11px;" title="Свернуть все">➖ Свернуть</button>
-                        <button type="button" class="btn btn-subtle" onclick="loadArchiveTree()" style="min-height: 26px; padding: 2px 8px; font-size: 11px;" title="Обновить дерево">🔄 Обновить</button>
-                    </div>
+            <div class="sidebar-section" style="flex:1;">
+                <div class="sidebar-title">
+                    <span>📁 Файлы Workspace</span>
+                    <button id="btnRefreshTree" style="background:none; border:none; color:var(--accent-cyan); cursor:pointer; font-size:12px;">🔄</button>
                 </div>
-
-                <div style="padding: 8px 12px; border-bottom: 1px solid var(--border);">
-                    <input type="text" id="archiveSearchInput" class="input" placeholder="🔍 Поиск файлов и папок..." oninput="filterVscTree()" style="font-size: 12px; height: 32px;">
-                </div>
-
-                <div class="vsc-tree" id="vscTreeContainer">
-                    <div style="text-align: center; color: var(--text-dim); padding: 20px;">Загрузка дерева файлов...</div>
+                <div id="fileTreeContainer">
+                    <div style="font-size:12px; color:var(--text-muted);">Загрузка файлов...</div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- 5. TAB: SCRIPTS & DIAGNOSTICS -->
-        <div id="tab-tasks" class="tab-content">
-            <!-- System Diagnostics Gauges -->
-            <div class="diag-grid">
-                <div class="diag-card">
-                    <div class="diag-val" id="diagCpu" style="color: #60a5fa;">0%</div>
-                    <div class="diag-label">CPU</div>
-                </div>
-                <div class="diag-card">
-                    <div class="diag-val" id="diagRam" style="color: #a78bfa;">0%</div>
-                    <div class="diag-label">RAM</div>
-                </div>
-                <div class="diag-card">
-                    <div class="diag-val" id="diagDisk" style="color: #34d399;">0%</div>
-                    <div class="diag-label">Диск C:</div>
-                </div>
-                <div class="diag-card">
-                    <div class="diag-val" id="diagUptime" style="font-size: 13px; color: #f59e0b; margin-top: 4px;">0ч 0м</div>
-                    <div class="diag-label">Uptime</div>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <button type="button" class="btn btn-purple" onclick="triggerQuickBackup()" style="flex: 1; font-size: 12px;">
-                    📦 Создать Zip-бэкап сервера
-                </button>
-                <button type="button" class="btn btn-subtle" onclick="loadTasks()" style="font-size: 12px;">
-                    🔄 Обновить скрипты
-                </button>
-            </div>
-
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                <span>⚡ Доступные скрипты и задачи автоматизации:</span>
-            </div>
-
-            <!-- Список карточек скриптов -->
-            <div id="tasksCardsContainer">
-                <div style="text-align: center; color: var(--text-dim); padding: 20px;">Загрузка скриптов...</div>
-            </div>
-
-            <div class="card" style="margin-top: 14px;">
-                <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Терминал живых логов:</span>
-                    <span id="activeRunningTaskBadge" style="font-size: 11px; color: #34d399; font-weight: normal;"></span>
-                </div>
-                <div class="terminal" id="taskTerminal" style="min-height: 180px; max-height: 320px; overflow-y: auto;">Выберите запущенный процесс для просмотра логов...</div>
-            </div>
-        </div>
-
-        <!-- 6. TAB: CALENDAR -->
-        <div id="tab-calendar" class="tab-content">
-            <div class="card" style="margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-weight: 700; font-size: 14px;">Синхронизация с телефоном</div>
-                    <a href="/api/calendar.ics" class="btn btn-subtle" style="font-size: 11px; min-height: 28px; padding: 4px 10px;">
-                        📥 Скачать .ics
-                    </a>
-                </div>
-                <div style="font-size: 12px; color: var(--text-dim);">
-                    Ссылка для подписки в Google / Apple Calendar:<br>
-                    <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #93c5fd;">http://192.168.50.108:8000/api/calendar.ics</code>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="font-weight: 700; font-size: 14px; margin-bottom: 10px;">Добавить событие / дедлайн</div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <input type="text" id="evtTitle" class="input" placeholder="Название события">
-                    <input type="date" id="evtDate" class="input">
-                    <button type="button" class="btn" onclick="handleAddCalendarEvent()">+ Добавить в календарь</button>
-                </div>
-            </div>
-
-            <div style="font-weight: 700; font-size: 13px; margin: 14px 0 8px 0;">Предстоящие события:</div>
-            <div id="calendarEventsList"></div>
-        </div>
-
-        <!-- 7. TAB: PROFILE -->
-        <div id="tab-profile" class="tab-content">
-            <div class="card">
-                <div style="font-weight: 700; font-size: 14px; margin-bottom: 12px;">👤 Профиль и контекст для Gemini</div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 3px;">Ваше имя:</div>
-                        <input type="text" id="profUserName" class="input" value="Пользователь">
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 3px;">О себе и цели:</div>
-                        <textarea id="profBio" class="textarea" placeholder="Опишите ваши цели, направление работы или учебы..."></textarea>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 3px;">Правила сортировки файлов:</div>
-                        <textarea id="profRules" class="textarea" placeholder="Правила сортировки файлов..."></textarea>
-                    </div>
-                    
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <div style="font-size: 12px; color: var(--text-dim);">Активные темы и папки:</div>
-                            <button type="button" class="btn btn-subtle" onclick="addProjectRow()" style="min-height: 24px; padding: 2px 8px; font-size: 11px;">+ Добавить</button>
-                        </div>
-                        <div id="projectsListContainer"></div>
-                    </div>
-
-                    <button type="button" class="btn btn-green" onclick="saveProfile()" style="margin-top: 6px;">💾 Сохранить профиль</button>
-
-            <!-- 💬 REMOTE MESSENGERS & BOTS SETTINGS CARD -->
-            <div class="card" style="margin-top: 16px; border: 1px solid rgba(59, 130, 246, 0.3); background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));">
-                <div style="font-weight: 700; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <span>💬 Мессенджеры для связи с сервером (VK, MAX, Telegram)</span>
-                    <span style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 2px 8px; border-radius: 6px;">24/7 Long Polling</span>
-                </div>
-                
-                <form onsubmit="saveRemoteBotTokens(event)" style="display: flex; flex-direction: column; gap: 14px;">
-                    <!-- VK Bot -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <div style="font-weight: 600; font-size: 13px; color: #60a5fa;">🔵 ВКонтакте (VK Bot)</div>
-                            <div id="vkBotStatus" style="font-size: 11px; color: var(--text-dim);">⚪ Проверка...</div>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">
-                            Поддерживает текстовый AI-чат, голосовые сообщения (с расшифровкой) и прием файлов в INBOX.
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
-                                <input type="password" id="inputVkToken" class="input" placeholder="VK_BOT_TOKEN (Ключ доступа сообщества)...">
-                                <input type="text" id="inputVkUserId" class="input" placeholder="Ваш VK User ID (для защиты)...">
-                            </div>
-                            <input type="text" id="inputVkProxy" class="input" placeholder="🛡️ VK_PROXY_URL (опционально: socks5://127.0.0.1:1080 или http://proxy:port для сокрытия IP)..." style="font-size: 11px;">
+        <!-- CENTER MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- VIEW 1: AI CHAT -->
+            <div id="view-chat" class="view-panel active">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message-bubble assistant">
+                            👋 Приветствую, <b>@ardont</b>! Я — Джарвис, твой персональный AI-хаб. Все системы активны, фокус дня настроен на подготовку к ШАД и разработку сервера. Чем займемся?
                         </div>
                     </div>
 
-                    <!-- MAX Messenger Bot -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <div style="font-weight: 600; font-size: 13px; color: #a78bfa;">🟣 Мессенджер MAX (MAX Bot)</div>
-                            <div id="maxBotStatus" style="font-size: 11px; color: var(--text-dim);">⚪ Проверка...</div>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">
-                            Официальный API платформы max.ru (platform-api2.max.ru).
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <input type="password" id="inputMaxToken" class="input" placeholder="MAX_BOT_TOKEN (Токен от Master Bot / платформы MAX)...">
-                            <input type="text" id="inputMaxProxy" class="input" placeholder="🛡️ MAX_PROXY_URL (опционально: socks5://127.0.0.1:1080 или http://proxy:port для сокрытия IP)..." style="font-size: 11px;">
-                        </div>
+                    <!-- QUICK PILLS -->
+                    <div class="quick-pills">
+                        <button class="quick-pill-btn" onclick="sendQuickPrompt('Создай подробный Study Guide по сингулярному разложению матриц (SVD) для ШАД')">🎓 Study Guide по SVD</button>
+                        <button class="quick-pill-btn" onclick="sendQuickPrompt('Какие задачи у меня сегодня в фокусе по трекам?')">🎯 Мой фокус на сегодня</button>
+                        <button class="quick-pill-btn" onclick="sendQuickPrompt('Дай мне 1 задачу уровня вступительного экзамена в ШАД по теории вероятностей с решением')">🎲 Задача по терверу (ШАД)</button>
+                        <button class="quick-pill-btn" onclick="sendQuickPrompt('Проверь статус сервера и файлов в папке INBOX')">📥 Проверить INBOX</button>
                     </div>
 
-                    <!-- Telegram Bot -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <div style="font-weight: 600; font-size: 13px; color: #38bdf8;">✈️ Telegram Bot</div>
-                            <div id="tgBotStatus" style="font-size: 11px; color: var(--text-dim);">⚪ Проверка...</div>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">
-                            Управление через Telegram (@BotFather).
-                        </div>
-                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
-                            <input type="password" id="inputTgToken" class="input" placeholder="TELEGRAM_BOT_TOKEN (от @BotFather)...">
-                            <input type="text" id="inputTgUserId" class="input" placeholder="Ваш Telegram ID...">
-                        </div>
+                    <!-- CHAT INPUT -->
+                    <div class="chat-input-bar">
+                        <input type="file" id="fileUploadInput" style="display:none;" onchange="handleFileSelect(event)">
+                        <button class="btn-icon" title="Прикрепить файл" onclick="document.getElementById('fileUploadInput').click()">📎</button>
+                        <textarea id="chatInput" class="chat-textarea" placeholder="Спросить Джарвиса, разобрать тему или выполнить задачу..."></textarea>
+                        <button id="btnSendChat" class="btn-send">Отправить 🚀</button>
                     </div>
-
-                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #2563eb, #7c3aed); border: none; font-weight: 600;">
-                        💾 Сохранить и применить токены
-                    </button>
-                </form>
-            </div>
-
                 </div>
             </div>
-        </div>
+
+            <!-- VIEW 2: STUDY GUIDES & NOTEBOOKLM -->
+            <div id="view-study" class="view-panel">
+                <div class="study-view">
+                    <div class="study-sidebar">
+                        <div style="font-size:14px; font-weight:700; color:#fff;">📚 Учебные Материалы</div>
+                        
+                        <div style="background:var(--bg-elevated); padding:10px; border-radius:var(--r-md); border:1px solid var(--border);">
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-cyan); margin-bottom:6px;">⚡ Создать новый Study Guide</div>
+                            <input id="studyTopicInput" type="text" placeholder="Тема (например: Матрицы Гессе)" style="width:100%; padding:6px 10px; background:#0b0f19; border:1px solid var(--border); border-radius:4px; color:#fff; font-size:12px; margin-bottom:8px; outline:none;">
+                            <select id="studyFormatSelect" style="width:100%; padding:5px 8px; background:#0b0f19; border:1px solid var(--border); border-radius:4px; color:#94a3b8; font-size:11px; margin-bottom:8px; outline:none;">
+                                <option value="study_guide">Study Guide (Теория + Формулы + Разбор)</option>
+                                <option value="faq">FAQ (10 сложных вопросов и ответов)</option>
+                                <option value="problem_set">Problem Set (5 задач уровня ШАД с решениями)</option>
+                                <option value="briefing_doc">Executive Briefing Doc</option>
+                            </select>
+                            <button id="btnGenStudyGuide" style="width:100%; background:var(--accent-indigo); color:#fff; border:none; padding:7px; border-radius:4px; font-size:12px; font-weight:700; cursor:pointer;">Синтезировать в NotebookLM 🚀</button>
+                        </div>
+
+                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Сохраненные методички:</div>
+                        <div id="studyGuidesList" style="display:flex; flex-direction:column; gap:6px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="studyPreviewArea" class="study-preview">
+                        <div style="text-align:center; color:var(--text-muted); margin-top:80px;">
+                            <h2>📖 Выберите или создайте учебный документ</h2>
+                            <p style="font-size:13px; margin-top:8px;">Все синтезированные материалы в стиле Google NotebookLM сохраняются в папку <code>documents/study_guides/</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: GROWTH TRACKS -->
+            <div id="view-tracks" class="view-panel" style="padding:24px; overflow-y:auto;">
+                <div style="max-width:880px; margin:0 auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <h1 style="font-size:22px; font-weight:800; color:#fff;">🎯 Направления Развития и Подготовки</h1>
+                            <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Дорожные карты, контрольные точки и промежуточные результаты подготовки в ШАД</p>
+                        </div>
+                    </div>
+
+                    <div style="background:var(--bg-surface); padding:16px; border-radius:var(--r-md); border:1px solid var(--border); margin-bottom:20px; display:flex; gap:12px; align-items:center;">
+                        <span style="font-size:18px;">🔥</span>
+                        <div style="flex:1;">
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase;">Главный Фокус Дня</div>
+                            <input id="dailyFocusInput" type="text" style="width:100%; background:transparent; border:none; color:#fff; font-size:15px; font-weight:600; outline:none; margin-top:2px;" placeholder="Задайте главный фокус на сегодня...">
+                        </div>
+                        <button id="btnSaveFocus" class="btn-send" style="height:36px; padding:0 14px; font-size:12px;">Сохранить</button>
+                    </div>
+
+                    <div id="fullTracksContainer" style="display:flex; flex-direction:column; gap:16px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: INBOX -->
+            <div id="view-inbox" class="view-panel" style="padding:24px; overflow-y:auto;">
+                <div style="max-width:880px; margin:0 auto;">
+                    <h1 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">📥 Сетевая Папка INBOX & Файловый Хаб</h1>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
+                        Файлы, закинутые в сетевую папку <code>\\192.168.50.108\INBOX</code> или прикрепленные в чате, автоматически анализируются и сохраняются на сервере.
+                    </p>
+                    <div id="inboxFilesContainer" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--r-md); padding:16px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <button type="button" class="mob-tab-btn active" data-tab="plan" onclick="switchTab('plan')">
-            <span class="mob-icon">🎯</span>
-            <span>План</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="chat" onclick="switchTab('chat')">
-            <span class="mob-icon">💬</span>
-            <span>Чат</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="inbox" onclick="switchTab('inbox')">
-            <span class="mob-icon">📥</span>
-            <span>INBOX</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="explorer" onclick="switchTab('explorer')">
-            <span class="mob-icon">📁</span>
-            <span>Файлы</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="tasks" onclick="switchTab('tasks')">
-            <span class="mob-icon">⚡</span>
-            <span>Скрипты</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
-            <span class="mob-icon">📅</span>
-            <span>Календарь</span>
-        </button>
-        <button type="button" class="mob-tab-btn" data-tab="profile" onclick="switchTab('profile')">
-            <span class="mob-icon">👤</span>
-            <span>Настройки</span>
-        </button>
-    </nav>
-
-    <div id="toast" class="toast">Уведомление</div>
+    <div id="toast"></div>
 
     <script>
-
-        // =========================================================================
-        // 🌓 УПРАВЛЕНИЕ ТЕМАМИ (DARK / LIGHT MODE)
-        // =========================================================================
-        function initTheme() {
-            const savedTheme = localStorage.getItem('homeserver_theme') || 'dark';
-            applyTheme(savedTheme);
+        function showToast(text, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = text;
+            t.style.borderColor = isError ? 'var(--accent-rose)' : 'var(--accent-emerald)';
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3500);
         }
 
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            const target = current === 'dark' ? 'light' : 'dark';
-            applyTheme(target);
-        }
-
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('homeserver_theme', theme);
-            
-            const icon = document.getElementById('themeIcon');
-            const label = document.getElementById('themeLabel');
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            
-            if (theme === 'light') {
-                if (icon) icon.textContent = '☀️';
-                if (label) label.textContent = 'Светлая';
-                if (metaTheme) metaTheme.setAttribute('content', '#f4f6f9');
-            } else {
-                if (icon) icon.textContent = '🌙';
-                if (label) label.textContent = 'Тёмная';
-                if (metaTheme) metaTheme.setAttribute('content', '#06080f');
-            }
-        }
-
-        
-        // Автоинициализация темы при загрузке скрипта
-        initTheme();
-
-
-        // 🚀 Smart Visibility Polling (Экономия 100% RAM в свернутом браузере)
-        let _isTabVisible = !document.hidden;
-        document.addEventListener("visibilitychange", () => {
-            _isTabVisible = !document.hidden;
-            if (_isTabVisible) {
-                // Мгновенно обновить данные при возврате на вкладку
-                if (typeof loadStatus === 'function') loadStatus();
-                if (typeof refreshProposals === 'function') refreshProposals();
-            }
+        // 1. Navigation Tabs
+        document.querySelectorAll('.nav-tab-btn[data-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const targetView = document.getElementById(btn.getAttribute('data-view'));
+                if (targetView) targetView.classList.add('active');
+            });
         });
 
-        // Безопасная обертка для периодических задач
-        function safePoll(fn) {
-            return () => {
-                if (_isTabVisible && typeof fn === 'function') {
-                    fn();
-                }
-            };
-        }
-    
-        // 🚀 CLIENT-SIDE IN-MEMORY CACHE & ULTRA-FAST STATE
-        let _planCache = null;
-        let _chatCache = [];
-        let _proposalsCache = [];
-        let _archiveTreeCache = [];
-        var _activeTaskInterval = null;
-        let _pomoInterval = null;
-        let _pomoSeconds = 20 * 60;
-        let _pomoRunning = false;
-
-        // 100% Instant Tab Switching (Desktop & Mobile Synchronized)
-        function switchTab(tabId) {
-            window.currentActiveTab = tabId;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === tabId));
-            document.querySelectorAll('.mob-tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === tabId));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
-
-            setTimeout(() => {
-                try {
-                    if (tabId === 'plan') loadTodayPlan();
-                    if (tabId === 'chat') loadChatHistory();
-                    if (tabId === 'inbox') refreshProposals();
-                    if (tabId === 'explorer') loadArchiveTree();
-                    if (tabId === 'tasks') { loadTasks(); loadDiagnostics(); }
-                    if (tabId === 'calendar') loadCalendarEvents();
-                    if (tabId === 'profile') loadProfile();
-                } catch(e) {
-                    console.error("Tab data loading error:", e);
-                }
-            }, 0);
-        };
-
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            toast.textContent = msg;
-            toast.className = 'toast show' + (isError ? ' error' : '');
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 2600);
-        };
-
-        // 🍅 Pomodoro Engine
-        window.togglePomodoro = function() {
-            const btn = document.getElementById('pomoBtn');
-            if (_pomoRunning) {
-                clearInterval(_pomoInterval);
-                _pomoRunning = false;
-                btn.textContent = '▶️ Продолжить';
-                btn.className = 'btn btn-purple';
-            } else {
-                _pomoRunning = true;
-                btn.textContent = '⏸️ Пауза';
-                btn.className = 'btn btn-subtle';
-                _pomoInterval = setInterval(() => {
-                    if (_pomoSeconds > 0) {
-                        _pomoSeconds--;
-                        updatePomoDisplay();
-                    } else {
-                        clearInterval(_pomoInterval);
-                        _pomoRunning = false;
-                        btn.textContent = '▶️ Старт';
-                        btn.className = 'btn btn-purple';
-                        _pomoSeconds = 20 * 60;
-                        updatePomoDisplay();
-                        fetch('/api/pomodoro/finish', { method: 'POST' });
-                        showToast('🎉 20 минут фокуса завершены! Отличная работа!');
-                    }
-                }, 1000);
-            }
-        };
-
-        window.resetPomodoro = function() {
-            clearInterval(_pomoInterval);
-            _pomoRunning = false;
-            _pomoSeconds = 20 * 60;
-            updatePomoDisplay();
-            const btn = document.getElementById('pomoBtn');
-            btn.textContent = '▶️ Старт';
-            btn.className = 'btn btn-purple';
-        };
-
-        function updatePomoDisplay() {
-            const m = Math.floor(_pomoSeconds / 60).toString().padStart(2, '0');
-            const s = (_pomoSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('pomoDisplay').textContent = `${m}:${s}`;
-        }
-
-        // 1. Plan Management
-        async function loadTodayPlan() {
+        // 2. Load Models Available
+        async function loadModels() {
             try {
-                const res = await fetch('/api/plan/today');
-                if (!res.ok) return;
-                const plan = await res.json();
-                _planCache = plan;
-                renderPlan(plan);
+                const res = await fetch('/api/models/available');
+                const data = await res.json();
+                const sel = document.getElementById('modelSelector');
+                sel.innerHTML = '';
+
+                if (data.omniroute_online) {
+                    const optGroup = document.createElement('optgroup');
+                    optGroup.label = '⚡ OmniRoute Gateway (Local)';
+                    (data.omniroute_models || ['default']).forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = `omniroute:${m}`;
+                        opt.innerText = `🌐 OmniRoute: ${m}`;
+                        optGroup.appendChild(opt);
+                    });
+                    sel.appendChild(optGroup);
+                }
+
+                const gemGroup = document.createElement('optgroup');
+                gemGroup.label = '🧠 Google Gemini Models';
+                data.builtin_models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.innerText = m.name;
+                    gemGroup.appendChild(opt);
+                });
+                sel.appendChild(gemGroup);
+                sel.value = data.default || 'gemini-3.1-flash-lite';
             } catch(e) {}
         }
 
-        async function refreshDailyPlan(forceNew = false) {
-            showToast('⏳ Запрос к ИИ...');
+        // 3. Load Tracks in Sidebar and Full View
+        async function loadTracks() {
             try {
-                const res = await fetch('/api/plan/today?force_new=' + forceNew);
-                const plan = await res.json();
-                _planCache = plan;
-                renderPlan(plan);
-                if (forceNew) {
-                    showToast('🧠 Новый план формируется в фоне');
-                }
-            } catch(e) {
-                showToast('Ошибка обновления плана', true);
-            }
-        }
+                const res = await fetch('/api/tracks');
+                const data = await res.json();
+                const tracks = data.tracks || [];
 
-        function renderPlan(plan) {
-            if (!plan) return;
-            if (plan.topic) document.getElementById('planTopic').textContent = plan.topic;
-            if (plan.overview) document.getElementById('planOverview').textContent = plan.overview;
-
-            const tasksContainer = document.getElementById('planTasksContainer');
-            if (tasksContainer && plan.tasks) {
-                tasksContainer.innerHTML = plan.tasks.map(t => `
-                    <div class="task-item ${t.done ? 'done' : ''}" onclick="toggleTask('${t.id}')">
-                        <div class="task-checkbox">${t.done ? '✓' : ''}</div>
-                        <div>
-                            <div class="task-item-title">${t.title}</div>
-                            <div class="task-item-desc">${t.details || ''}</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const roadmapContainer = document.getElementById('roadmapContainer');
-            if (roadmapContainer && plan.roadmap) {
-                roadmapContainer.innerHTML = plan.roadmap.map(r => `
-                    <div style="margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 3px;">
-                            <span>${r.name}</span>
-                            <span style="font-weight: 700; color: #93c5fd;">${r.progress}%</span>
+                // Sidebar
+                const sideCon = document.getElementById('tracksSidebarContainer');
+                sideCon.innerHTML = '';
+                tracks.forEach(t => {
+                    const el = document.createElement('div');
+                    el.className = 'track-card';
+                    el.innerHTML = `
+                        <div class="track-header">
+                            <span>${t.title}</span>
+                            <span style="color:var(--accent-cyan);">${t.progress_percent}%</span>
                         </div>
                         <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: ${r.progress}%;"></div>
+                            <div class="progress-bar-fill" style="width:${t.progress_percent}%;"></div>
                         </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        window.toggleTask = async function(taskId) {
-            if (_planCache && _planCache.tasks) {
-                for (let t of _planCache.tasks) {
-                    if (t.id === taskId) {
-                        t.done = !t.done;
-                        break;
-                    }
-                }
-                renderPlan(_planCache);
-            }
-            try {
-                const res = await fetch('/api/plan/toggle/' + taskId, { method: 'POST' });
-                const updated = await res.json();
-                _planCache = updated;
-                renderPlan(updated);
-                showToast('✅ Прогресс сохранен');
-            } catch(e) {}
-        };
-
-        window.triggerPhoneNotification = async function() {
-            try {
-                const res = await fetch('/api/plan/notify', { method: 'POST' });
-                const data = await res.json();
-                showToast(data.message || '🔔 Отправлено на телефон!');
-            } catch(e) {
-                showToast('Ошибка отправки пуша', true);
-            }
-        };
-
-        // 2. Chat with Markdown & Quick Prompts
-        async function loadChatHistory() {
-            try {
-                const res = await fetch('/api/chat/history');
-                const history = await res.json();
-                _chatCache = history;
-                renderChat(history);
-            } catch(e) {}
-        }
-
-        function formatMarkdown(text) {
-            if (!text) return '';
-            let html = text
-                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                .replace(/\*(.*?)\*/g, '<i>$1</i>')
-                .replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; color: #93c5fd; font-family: monospace;">$1</code>')
-                .replace(/\n/g, '<br>');
-            return html;
-        }
-
-        function renderChat(history) {
-            const container = document.getElementById('chatMessages');
-            if (!container) return;
-            if (!history || history.length === 0) {
-                container.innerHTML = `<div class="msg assistant">Привет! Я готов помочь вам в учебе, задачах по Python, SQL и проектах. Чем займемся?</div>`;
-                return;
-            }
-            container.innerHTML = history.map(m => {
-                let txt = m.content || m.text || m.response || m.reply || "";
-                if (Array.isArray(txt)) txt = txt.filter(x => typeof x === 'string').join(' ');
-                if (typeof txt !== 'string') txt = String(txt || '');
-                const actions = m.actions || (m.executed_tools ? m.executed_tools.map(t => typeof t === 'object' ? t.tool : t) : []);
-                return `
-                    <div class="msg ${m.role || 'user'}">
-                        ${formatMarkdown(txt)}
-                        ${actions && actions.length ? actions.map(a => `<div class="msg-action">⚡ ${a}</div>`).join('') : ''}
-                    </div>
-                `;
-            }).join('');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        window.sendQuickPrompt = function(promptText) {
-            document.getElementById('chatInput').value = promptText;
-            document.querySelector('.chat-input-row button').click();
-        };
-
-        window.handleSendChat = async function(e) {
-            e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            input.value = '';
-
-            const container = document.getElementById('chatMessages');
-            const userMsgDiv = document.createElement('div');
-            userMsgDiv.className = 'msg user';
-            userMsgDiv.textContent = msg;
-            container.appendChild(userMsgDiv);
-
-            const thinkingDiv = document.createElement('div');
-            thinkingDiv.className = 'msg assistant';
-            thinkingDiv.innerHTML = '<span style="color: #93c5fd;">⚡ Думаю...</span>';
-            container.appendChild(thinkingDiv);
-            container.scrollTop = container.scrollHeight;
-
-            try {
-                const res = await fetch('/api/chat/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg })
-                });
-                const data = await res.json();
-                const replyText = data.reply || data.response || data.text || data.content || 'Ответ получен.';
-                const tools = data.executed_tools || data.actions_taken || [];
-                thinkingDiv.innerHTML = formatMarkdown(replyText) + (tools.length ? tools.map(a => `<div class="msg-action">⚡ ${typeof a === 'object' ? a.tool : a}</div>`).join('') : '');
-                container.scrollTop = container.scrollHeight;
-            } catch(err) {
-                thinkingDiv.textContent = 'Ошибка ответа ассистента.';
-            }
-        };
-
-        window.clearChat = async function() {
-            try {
-                await fetch('/api/chat/clear', { method: 'POST' });
-                document.getElementById('chatMessages').innerHTML = '<div class="msg assistant">История диалога очищена.</div>';
-                showToast('🗑️ Чат очищен');
-            } catch(e) {}
-        };
-
-        
-        // ------------------------------------------------------------------------------
-        // 📄 UNIVERSAL DOCUMENT VIEWER (PDF, Markdown, Code)
-        // ------------------------------------------------------------------------------
-        let currentViewingPath = '';
-
-        async function openDocument(relPath, extHint = '') {
-            const modal = document.getElementById('docViewerModal');
-            const titleEl = document.getElementById('docViewerTitle');
-            const pathEl = document.getElementById('docViewerPath');
-            const iconEl = document.getElementById('docViewerIcon');
-            const bodyEl = document.getElementById('docViewerBody');
-            const dlBtn = document.getElementById('docViewerDownloadBtn');
-
-            if (!modal) return;
-
-            currentViewingPath = relPath;
-            const filename = relPath.split('/').pop().split('\\').pop();
-            const ext = extHint || ('.' + filename.split('.').pop().toLowerCase());
-
-            titleEl.textContent = filename;
-            pathEl.textContent = relPath;
-            dlBtn.href = `/api/download/file?path=${encodeURIComponent(relPath)}`;
-
-            // Настройка иконки
-            if (ext === '.pdf') iconEl.textContent = '📕';
-            else if (['.md', '.markdown'].includes(ext)) iconEl.textContent = '📝';
-            else if (['.py', '.go', '.js', '.sql', '.sh', '.bat'].includes(ext)) iconEl.textContent = '🐍';
-            else if (['.m4a', '.mp3', '.wav'].includes(ext)) iconEl.textContent = '🎙️';
-            else iconEl.textContent = '📄';
-
-            modal.style.display = 'flex';
-            bodyEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted);">⏳ Загрузка документа...</div>';
-
-            try {
-                if (ext === '.pdf') {
-                    // PDF: встроенный iframe
-                    const pdfUrl = `/api/view/pdf?path=${encodeURIComponent(relPath)}`;
-                    bodyEl.innerHTML = `
-                        <div style="height: 72vh; width: 100%;">
-                            <iframe src="${pdfUrl}" style="width: 100%; height: 100%; border: none; border-radius: var(--r-sm);" frameborder="0"></iframe>
-                        </div>
+                        <div class="track-focus-text">${t.focus_area || ''}</div>
                     `;
-                } else if (['.md', '.markdown'].includes(ext)) {
-                    // Markdown: рендеринг через marked
-                    const res = await fetch(`/api/view/raw?path=${encodeURIComponent(relPath)}`);
-                    const data = await res.json();
-                    if (data.status === 'ok') {
-                        let parsedHtml = data.content;
-                        if (typeof marked !== 'undefined' && marked.parse) {
-                            parsedHtml = marked.parse(data.content);
-                        }
-                        bodyEl.innerHTML = `<div class="markdown-body" style="line-height: 1.7;">${parsedHtml}</div>`;
-                    } else {
-                        bodyEl.innerHTML = `<div style="color: var(--danger);">Ошибка: ${data.detail || 'Не удалось загрузить'}</div>`;
-                    }
-                } else {
-                    // Код / текст / логи
-                    const res = await fetch(`/api/view/raw?path=${encodeURIComponent(relPath)}`);
-                    const data = await res.json();
-                    if (data.status === 'ok') {
-                        const safeText = data.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        bodyEl.innerHTML = `
-                            <pre style="background: #0b0f19; color: #4ade80; padding: 1.25rem; border-radius: var(--r-sm); overflow-x: auto; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.9rem; line-height: 1.5; border: 1px solid var(--border);"><code>${safeText}</code></pre>
-                        `;
-                    } else {
-                        bodyEl.innerHTML = `<div style="color: var(--danger);">Ошибка: ${data.detail || 'Не удалось загрузить'}</div>`;
-                    }
-                }
-            } catch (err) {
-                bodyEl.innerHTML = `<div style="color: var(--danger);">Ошибка открытия файла: ${err.message}</div>`;
-            }
-        }
+                    sideCon.appendChild(el);
+                });
 
-        function closeDocViewer() {
-            const modal = document.getElementById('docViewerModal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        // Закрытие по ESC
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeDocViewer();
-        });
-
-        // ------------------------------------------------------------------------------
-        // 📎 CHAT FILE ATTACHMENTS & DRAG AND DROP
-        // ------------------------------------------------------------------------------
-        let selectedChatFile = null;
-
-        function handleChatFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            setChatAttachment(file);
-        }
-
-        function setChatAttachment(file) {
-            selectedChatFile = file;
-            const preview = document.getElementById('chatAttachmentPreview');
-            const nameEl = document.getElementById('chatAttachName');
-            const sizeEl = document.getElementById('chatAttachSize');
-            const iconEl = document.getElementById('chatAttachIcon');
-
-            if (!preview) return;
-
-            const ext = file.name.split('.').pop().toLowerCase();
-            if (['m4a', 'mp3', 'wav', 'ogg'].includes(ext)) iconEl.textContent = '🎙️';
-            else if (['pdf'].includes(ext)) iconEl.textContent = '📕';
-            else if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) iconEl.textContent = '🖼️';
-            else if (['py', 'go', 'js', 'sql', 'sh'].includes(ext)) iconEl.textContent = '🐍';
-            else iconEl.textContent = '📄';
-
-            nameEl.textContent = file.name;
-            sizeEl.textContent = `(${Math.round(file.size / 1024)} KB)`;
-            preview.style.display = 'flex';
-        }
-
-        function clearChatAttachment() {
-            selectedChatFile = null;
-            const preview = document.getElementById('chatAttachmentPreview');
-            const fileInput = document.getElementById('chatFileInput');
-            if (preview) preview.style.display = 'none';
-            if (fileInput) fileInput.value = '';
-        }
-
-        // Обновленный sendChatMessage с поддержкой отправки FormData
-        async function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            if (!input) return;
-            const message = input.value.trim();
-            const fileToSend = selectedChatFile;
-
-            if (!message && !fileToSend) return;
-
-            // Отображаем сообщение пользователя в UI
-            let displayUserText = message;
-            if (fileToSend) {
-                displayUserText = `📎 [Прикреплен: ${fileToSend.name}]\n${message}`;
-            }
-            appendChatMessage('user', displayUserText);
-            input.value = '';
-            clearChatAttachment();
-
-            // Индикатор загрузки
-            const loadingId = appendChatMessage('assistant', '⏳ <i>Думаю и выполняю реальные задачи...</i>');
-
-            try {
-                let responseData;
-                if (fileToSend) {
-                    const formData = new FormData();
-                    const curModel = document.getElementById('chatModelSelect')?.value || 'gemini-flash-latest';
-                    formData.append('message', message);
-                    formData.append('model', curModel);
-                    formData.append('file', fileToSend);
-                    const res = await fetch('/api/chat', { method: 'POST', body: formData });
-                    responseData = await res.json();
-                } else {
-                    const res = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message, model: document.getElementById('chatModelSelect')?.value || 'gemini-flash-latest' })
-                    });
-                    responseData = await res.json();
-                }
-
-                // Удаляем индикатор загрузки и выводим ответ
-                removeChatMessage(loadingId);
-                const replyText = responseData.response || responseData.detail || 'Ответ получен.';
-                appendChatMessage('assistant', replyText);
-
-                // Если выполнялись инструменты, покажем уведомление
-                if (responseData.executed_tools && responseData.executed_tools.length > 0) {
-                    showToast(`⚡ Выполнено инструментов: ${responseData.executed_tools.length}`);
-                }
-            } catch (err) {
-                removeChatMessage(loadingId);
-                appendChatMessage('assistant', `⚠️ Ошибка: ${err.message}`);
-            }
-        }
-
-
-        // 3. INBOX Proposals
-        // --- 3. INBOX Proposals & Live Multi-Device Sync ---
-        async function refreshProposals() {
-            try {
-                const res = await fetch('/api/proposals');
-                if (res.ok) {
-                    const data = await res.json();
-                    renderProposals(data);
+                // Full View
+                document.getElementById('dailyFocusInput').value = data.daily_focus || '';
+                const fullCon = document.getElementById('fullTracksContainer');
+                fullCon.innerHTML = '';
+                tracks.forEach(t => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--r-md); padding:18px;';
                     
-                    // Обновляем бейдж на вкладке INBOX
-                    const badge = document.getElementById('inboxBadge');
-                    if (badge) {
-                        badge.innerText = data.length;
-                        badge.style.display = data.length > 0 ? 'inline-block' : 'none';
-                    }
-                }
-            } catch (e) {
-                console.error('Error refreshing proposals:', e);
-            }
-        }
-
-        function renderProposals(proposals) {
-            const container = document.getElementById('proposalsList');
-            if (!container) return;
-            if (!Array.isArray(proposals)) {
-                if (proposals && Array.isArray(proposals.proposals)) {
-                    proposals = proposals.proposals;
-                } else {
-                    proposals = [];
-                }
-            }
-            if (!container) return;
-
-            if (!proposals || proposals.length === 0) {
-                container.innerHTML = `
-                    <div class="card text-center p-6 text-slate-400 border border-slate-800/80 rounded-2xl bg-slate-900/40">
-                        <span class="text-2xl">✨</span>
-                        <div class="text-xs font-semibold text-slate-300 mt-1">Все входящие файлы обработаны</div>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Скиньте файл с телефона, ноутбука или нажмите Ctrl+V</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = proposals.map(p => `
-                <div class="card mb-3 p-3.5 rounded-2xl bg-slate-900/90 border border-blue-500/30 shadow-lg" id="prop_card_${p.id}">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2 overflow-hidden">
-                            <span class="text-xl">📄</span>
-                            <div class="overflow-hidden">
-                                <div class="text-xs font-bold text-white truncate max-w-xs md:max-w-md">${p.filename}</div>
-                                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                                    <span>${p.date_str || ''}</span>
-                                    <span>•</span>
-                                    <span class="font-mono text-blue-300">${p.size_str || ''}</span>
-                                </div>
-                            </div>
+                    let topicsHtml = (t.topics || []).map(top => `
+                        <div style="display:flex; align-items:center; gap:8px; padding:6px 0; font-size:13px;">
+                            <input type="checkbox" ${top.completed ? 'checked' : ''} onchange="markTopic('${t.id}', '${top.name}')" style="cursor:pointer;">
+                            <span style="${top.completed ? 'text-decoration:line-through; color:var(--text-muted);' : 'color:#fff; font-weight:500;'}">${top.name}</span>
                         </div>
-                        <span class="text-[11px] px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">Ожидает проверки</span>
-                    </div>
+                    `).join('');
 
-                    <!-- Category Selector & Custom Comment Input -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 my-2.5">
-                        <div>
-                            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">📁 Категория архива:</label>
-                            <select id="cat_select_${p.id}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-blue-500 font-medium">
-                                <option value="education" ${p.category === 'education' ? 'selected' : ''}>🎓 Обучение & ШАД</option>
-                                <option value="active_projects" ${p.category === 'active_projects' ? 'selected' : ''}>💻 Проекты & Код</option>
-                                <option value="finances" ${p.category === 'finances' ? 'selected' : ''}>💰 Финансы & Крипта</option>
-                                <option value="books" ${p.category === 'books' ? 'selected' : ''}>📚 Книги & Учебники</option>
-                                <option value="general" ${p.category === 'general' ? 'selected' : ''}>📁 Общие файлы</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">💬 Комментарий / Инструкция к файлу:</label>
-                            <input type="text" id="comment_input_${p.id}" value="${p.user_comment || ''}" placeholder="Например: Разобрать теорему или решить задачи №3..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-800">
-                        <a href="/api/inbox/file/${encodeURIComponent(p.filename)}" target="_blank" download class="btn bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white font-medium text-xs px-3 py-2 rounded-xl border border-blue-500/30 transition-all flex items-center gap-1">
-                            <span>⬇️</span> <span>Скачать из INBOX</span>
-                        </a>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="approveProposal('${p.id}')" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5">
-                                <span>✓</span> <span>Одобрить и переместить</span>
-                            </button>
-                            <button type="button" onclick="deleteProposal('${p.id}')" class="btn bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white font-medium text-xs px-3 py-2 rounded-xl border border-red-500/30 transition-all flex items-center gap-1">
-                                <span>🗑️</span> <span>Удалить</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function approveProposal(id) {
-            const catSelect = document.getElementById(`cat_select_${id}`);
-            const commentInput = document.getElementById(`comment_input_${id}`);
-            const category = catSelect ? catSelect.value : 'general';
-            const comment = commentInput ? commentInput.value.trim() : '';
-
-            showToast('⚡ Перемещение файла...');
-            try {
-                const res = await fetch('/api/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, category: category, comment: comment })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast(`✅ Файл перемещен в категорию "${category}"!`);
-                    refreshProposals();
-                    loadArchiveTree();
-                } else {
-                    showToast(`Ошибка: ${data.detail || 'Не удалось переместить'}`, true);
-                }
-            } catch (err) {
-                showToast('Ошибка подтверждения', true);
-            }
-        }
-
-        async function deleteProposal(id) {
-            if (!confirm(`Удалить файл "${id}" из INBOX?`)) return;
-            showToast('🗑️ Удаление...');
-            try {
-                const res = await fetch('/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, filename: id })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast('✅ Файл удален из INBOX');
-                    refreshProposals();
-                } else {
-                    showToast(`Ошибка: ${data.detail || 'Не удалось удалить'}`, true);
-                }
-            } catch (err) {
-                showToast('Ошибка удаления', true);
-            }
-        }
-
-        // =========================================================================
-        // 🌲 VS CODE STYLE FILE TREE EXPLORER
-        // =========================================================================
-        let _vscTreeData = [];
-
-        function getFileIcon(ext, name) {
-            ext = (ext || '').toLowerCase();
-            if (ext === 'py') return '🐍';
-            if (ext === 'js' || ext === 'ts') return '📜';
-            if (ext === 'html' || ext === 'css') return '🌐';
-            if (ext === 'json' || ext === 'env') return '⚙️';
-            if (ext === 'rdp') return '🖥️';
-            if (ext === 'bat' || ext === 'ps1' || ext === 'sh') return '⚡';
-            if (ext === 'pdf') return '📕';
-            if (ext === 'zip' || ext === 'rar' || ext === '7z' || ext === 'tar' || ext === 'apk') return '📦';
-            if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'svg' || ext === 'gif') return '🖼️';
-            if (ext === 'mp3' || ext === 'wav' || ext === 'mp4' || ext === 'mov') return '🎵';
-            if (ext === 'xlsx' || ext === 'csv') return '📊';
-            if (ext === 'md' || ext === 'txt') return '📝';
-            return '📄';
-        }
-
-        async function loadArchiveTree() {
-            const container = document.getElementById('vscTreeContainer');
-            if (!container) return;
-            try {
-                const res = await fetch('/api/files/tree');
-                if (!res.ok) throw new Error('API returned ' + res.status);
-                _vscTreeData = await res.json();
-                renderVscTree(_vscTreeData);
-            } catch(e) {
-                console.error("Tree load error:", e);
-                container.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">Ошибка загрузки дерева файлов</div>';
-            }
-        }
-
-        function renderVscNode(node) {
-            if (node.type === 'folder') {
-                const hasChildren = node.children && node.children.length > 0;
-                const countBadge = node.file_count !== undefined ? `<span class="vsc-file-meta">(${node.file_count} файлов)</span>` : '';
-                return `
-                    <div class="vsc-folder open" data-path="${node.path}">
-                        <div class="vsc-item" onclick="toggleVscFolder(event, this)">
-                            <div class="vsc-item-left">
-                                <span class="vsc-caret">▶</span>
-                                <span class="vsc-file-icon">📁</span>
-                                <span class="vsc-file-name" style="font-weight: 700;">${node.name}</span>
-                                ${countBadge}
-                            </div>
-                        </div>
-                        <div class="vsc-children">
-                            ${hasChildren ? node.children.map(renderVscNode).join('') : '<div style="padding: 4px 12px; color: var(--text-muted); font-size: 11px;">(пустая папка)</div>'}
-                        </div>
-                    </div>
-                `;
-            } else {
-                const icon = getFileIcon(node.ext, node.name);
-                return `
-                    <div class="vsc-file" data-name="${node.name}">
-                        <div class="vsc-item">
-                            <div class="vsc-item-left" style="padding-left: 14px;">
-                                <span class="vsc-file-icon">${icon}</span>
-                                <span class="vsc-file-name">${node.name}</span>
-                                <span class="vsc-file-meta">${node.size_kb} KB • ${node.modified || ''}</span>
-                            </div>
-                            <div class="vsc-actions" style="display: flex; align-items: center; gap: 6px;">
-                                <button type="button" class="btn btn-subtle" onclick="openFileViewer('${node.path}', '${node.name}')" style="font-size: 11px; min-height: 24px; padding: 2px 8px; color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);" title="Просмотреть файл">
-                                    👁️ Просмотр
-                                </button>
-                                <a href="${node.download_url}" download class="btn btn-subtle" style="font-size: 11px; min-height: 24px; padding: 2px 8px;" title="Скачать файл">
-                                    📥 Скачать
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        function renderVscTree(data) {
-            const container = document.getElementById('vscTreeContainer');
-            if (!container) return;
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 20px;">Файлы не найдены</div>';
-                return;
-            }
-            container.innerHTML = data.map(renderVscNode).join('');
-        }
-
-        function toggleVscFolder(event, el) {
-            event.stopPropagation();
-            const folder = el.closest('.vsc-folder');
-            if (folder) {
-                folder.classList.toggle('open');
-            }
-        }
-
-        function expandAllVscTree() {
-            document.querySelectorAll('.vsc-folder').forEach(f => f.classList.add('open'));
-        }
-
-        function collapseAllVscTree() {
-            document.querySelectorAll('.vsc-folder').forEach(f => f.classList.remove('open'));
-        }
-
-        function filterVscTree() {
-            const q = (document.getElementById('archiveSearchInput').value || '').toLowerCase().trim();
-            if (!q) {
-                renderVscTree(_vscTreeData);
-                return;
-            }
-            function filterNode(node) {
-                if (node.type === 'folder') {
-                    const filteredChildren = (node.children || []).map(filterNode).filter(Boolean);
-                    if (filteredChildren.length > 0 || node.name.toLowerCase().includes(q)) {
-                        return { ...node, children: filteredChildren };
-                    }
-                    return null;
-                } else {
-                    return node.name.toLowerCase().includes(q) ? node : null;
-                }
-            }
-            const filtered = _vscTreeData.map(filterNode).filter(Boolean);
-            renderVscTree(filtered);
-            expandAllVscTree();
-        }
-
-        // =========================================================================
-        // ⚡ TASK & SCRIPT RUNNER LOGIC
-        // =========================================================================
-        async function loadTasks() {
-            const container = document.getElementById('tasksCardsContainer');
-            if (!container) return;
-            try {
-                const res = await fetch('/api/tasks');
-                if (!res.ok) throw new Error('API /api/tasks returned ' + res.status);
-                const tasks = await res.json();
-                
-                if (!tasks || tasks.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 20px;">Нет доступных скриптов</div>';
-                    return;
-                }
-
-                container.innerHTML = tasks.map(t => {
-                    const isRunning = t.status === 'running';
-                    const statusColor = isRunning ? '#34d399' : (t.status === 'completed' ? '#60a5fa' : 'var(--text-muted)');
-                    const statusText = isRunning ? `🟢 Работает (PID: ${t.pid || 'Active'}, ${t.uptime || ''})` : (t.status === 'completed' ? '✔️ Завершен' : '⏹️ Готов к запуску');
-
-                    return `
-                        <div class="script-task-card">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; font-size: 14px; color: var(--text);">${t.name}</div>
-                                <div style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">${t.description}</div>
-                                <div style="font-size: 11px; color: ${statusColor}; margin-top: 4px; font-weight: 600;">
-                                    Статус: ${statusText}
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                ${isRunning ? `
-                                    <button type="button" class="btn btn-red" onclick="stopTask('${t.id}')" style="min-height: 32px; padding: 4px 12px; font-size: 12px;">
-                                        ⏹️ Стоп
-                                    </button>
-                                ` : `
-                                    <button type="button" class="btn btn-green" onclick="startTask('${t.id}')" style="min-height: 32px; padding: 4px 12px; font-size: 12px;">
-                                        ▶️ Запустить
-                                    </button>
-                                `}
-                                <button type="button" class="btn btn-subtle" onclick="viewTaskLogs('${t.id}', '${t.name}')" style="min-height: 32px; padding: 4px 10px; font-size: 12px;">
-                                    📋 Логи
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch(e) {
-                console.error("Tasks load error:", e);
-                container.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">Ошибка загрузки списка скриптов</div>';
-            }
-        }
-
-        async function startTask(id) {
-            showToast('Запуск скрипта: ' + id);
-            try {
-                const res = await fetch('/api/tasks/start/' + id, { method: 'POST' });
-                const data = await res.json();
-                loadTasks();
-                viewTaskLogs(id, id);
-            } catch(e) {
-                showToast('Ошибка запуска скрипта', true);
-            }
-        };
-
-        async function stopTask(id) {
-            showToast('Остановка скрипта: ' + id);
-            try {
-                await fetch('/api/tasks/stop/' + id, { method: 'POST' });
-                loadTasks();
-            } catch(e) {
-                showToast('Ошибка остановки скрипта', true);
-            }
-        };
-
-        var _activeTaskInterval = null;
-        async function viewTaskLogs(id, name) {
-            if (_activeTaskInterval) clearInterval(_activeTaskInterval);
-            const terminal = document.getElementById('taskTerminal');
-            const badge = document.getElementById('activeRunningTaskBadge');
-            if (badge) badge.textContent = `[Просмотр: ${name || id}]`;
-            
-            const fetchLogs = async () => {
-                try {
-                    const res = await fetch('/api/tasks/logs/' + id);
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    if (terminal) {
-                        terminal.textContent = data.logs || 'Процесс запущен, ожидание вывода...';
-                        terminal.scrollTop = terminal.scrollHeight;
-                    }
-                } catch(e) {}
-            };
-
-            fetchLogs();
-            _activeTaskInterval = setInterval(fetchLogs, 2000);
-        };
-
-        // 5. Tasks, Diagnostics & Quick Backup
-        // 5. Tasks, Diagnostics & Quick Backup
-        async function loadDiagnostics() {
-            try {
-                const res = await fetch('/api/status');
-                if (!res.ok) return;
-                const data = await res.json();
-                
-                const cpuVal = (data.cpu_percent !== undefined ? data.cpu_percent : (data.cpu !== undefined ? data.cpu : 0));
-                const ramVal = (data.ram_percent !== undefined ? data.ram_percent : (data.ram !== undefined ? data.ram : 0));
-                const diskVal = (data.disk_percent !== undefined ? data.disk_percent : (data.disk !== undefined ? data.disk : 0));
-                const uptimeVal = data.uptime_str || data.uptime || '0ч 0м';
-                
-                const elCpu = document.getElementById('diagCpu');
-                const elRam = document.getElementById('diagRam');
-                const elDisk = document.getElementById('diagDisk');
-                const elUptime = document.getElementById('diagUptime');
-                
-                if (elCpu) elCpu.textContent = Math.round(cpuVal) + '%';
-                if (elRam) elRam.textContent = Math.round(ramVal) + '%';
-                if (elDisk) elDisk.textContent = Math.round(diskVal) + '%';
-                if (elUptime) elUptime.textContent = uptimeVal;
-            } catch(e) {
-                console.error("Ошибка загрузки диагностики:", e);
-            }
-        }
-
-
-
-        async function triggerQuickBackup() {
-            showToast('📦 Создание zip-бэкапа...');
-            try {
-                const res = await fetch('/api/backup/create', { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`✅ Бэкап создан: ${data.filename} (${data.size_mb} MB)`);
-                }
-            } catch(e) {
-                showToast('Ошибка создания бэкапа', true);
-            }
-        }
-
-        async function loadTasks() {
-            try {
-                const res = await fetch('/api/tasks');
-                const tasks = await res.json();
-                const container = document.getElementById('tasksCardsContainer');
-                container.innerHTML = tasks.map(t => `
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                             <div>
-                                <div style="font-weight: 700; font-size: 14px;">${t.name}</div>
-                                <div style="font-size: 12px; color: var(--text-dim);">${t.description}</div>
-                                <div style="font-size: 11px; color: ${t.status === 'running' ? '#34d399' : 'var(--text-muted)'}; margin-top: 4px;">
-                                    Статус: <b>${t.status === 'running' ? '🟢 Работает (PID: ' + t.pid + ')' : '⏹️ Остановлен'}</b>
-                                </div>
+                                <h3 style="font-size:16px; color:#fff;">${t.title}</h3>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Фокус: <span style="color:#93c5fd;">${t.focus_area}</span></div>
                             </div>
-                            <div style="display: flex; gap: 6px;">
-                                ${t.status === 'running' ? `
-                                    <button type="button" class="btn btn-red" onclick="stopTask('${t.id}')" style="min-height: 32px; padding: 4px 12px;">⏹️ Стоп</button>
-                                ` : `
-                                    <button type="button" class="btn btn-green" onclick="startTask('${t.id}')" style="min-height: 32px; padding: 4px 12px;">▶️ Старт</button>
-                                `}
-                                <button type="button" class="btn btn-subtle" onclick="viewTaskLogs('${t.id}')" style="min-height: 32px; padding: 4px 10px;">📋 Логи</button>
-                            </div>
+                            <span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">${t.progress_percent}%</span>
                         </div>
-                    </div>
-                `).join('');
-            } catch(e) {}
-        }
-
-        async function startTask(id) {
-            showToast('Запуск процесса ' + id);
-            try {
-                await fetch('/api/tasks/start/' + id, { method: 'POST' });
-                loadTasks();
-                viewTaskLogs(id);
-            } catch(e) {}
-        };
-
-        async function stopTask(id) {
-            showToast('Остановка процесса ' + id);
-            try {
-                await fetch('/api/tasks/stop/' + id, { method: 'POST' });
-                loadTasks();
-            } catch(e) {}
-        };
-
-        async function viewTaskLogs(id) {
-            if (_activeTaskInterval) clearInterval(_activeTaskInterval);
-            const terminal = document.getElementById('taskTerminal');
-            
-            const fetchLogs = async () => {
-                try {
-                    const res = await fetch('/api/tasks/logs/' + id);
-                    const data = await res.json();
-                    terminal.textContent = data.logs || 'Логи пусты...';
-                    terminal.scrollTop = terminal.scrollHeight;
-                } catch(e) {}
-            };
-            fetchLogs();
-            _activeTaskInterval = setInterval(fetchLogs, 2000);
-        };
-
-        // 6. Calendar
-        async function loadCalendarEvents() {
-            try {
-                const res = await fetch('/api/calendar/events');
-                const events = await res.json();
-                const container = document.getElementById('calendarEventsList');
-                if (!events || events.length === 0) {
-                    container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">Событий пока нет.</div>';
-                    return;
-                }
-                container.innerHTML = events.map(e => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-card); border: 1px solid var(--border); padding: 10px 12px; border-radius: var(--r-md); margin-bottom: 6px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 13.5px;">${e.title}</div>
-                            <div style="font-size: 11.5px; color: #93c5fd;">📅 ${e.date} • ${e.source || 'Вручную'}</div>
+                        <div class="progress-bar-bg" style="height:6px; margin-bottom:14px;">
+                            <div class="progress-bar-fill" style="width:${t.progress_percent}%;"></div>
                         </div>
-                        <button type="button" class="btn btn-red" onclick="deleteCalendarEvent('${e.id}')" style="min-height: 26px; padding: 2px 8px; font-size: 11px;">🗑️</button>
-                    </div>
-                `).join('');
-            } catch(e) {}
-        }
-
-        window.handleAddCalendarEvent = async function() {
-            const title = document.getElementById('evtTitle').value.trim();
-            const date = document.getElementById('evtDate').value;
-            if (!title || !date) {
-                showToast('Укажите название и дату', true);
-                return;
-            }
-            try {
-                await fetch('/api/calendar/events', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: title, date: date })
+                        <div style="margin-bottom:8px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ключевые темы и майлстоуны:</div>
+                        ${topicsHtml}
+                    `;
+                    fullCon.appendChild(card);
                 });
-                document.getElementById('evtTitle').value = '';
-                showToast('📅 Событие сохранено');
-                loadCalendarEvents();
-            } catch(e) {}
-        };
-
-        window.deleteCalendarEvent = async function(id) {
-            try {
-                await fetch('/api/calendar/events/' + id, { method: 'DELETE' });
-                showToast('🗑️ Событие удалено');
-                loadCalendarEvents();
-            } catch(e) {}
-        };
-
-        // 7. Profile
-        async function loadProfile() {
-            try {
-                const res = await fetch('/api/profile');
-                const data = await res.json();
-                if (data.user_name) document.getElementById('profUserName').value = data.user_name;
-                if (data.bio) document.getElementById('profBio').value = data.bio;
-                if (data.sorting_rules) document.getElementById('profRules').value = data.sorting_rules;
-                renderProjects(data.active_projects || [
-                    { name: "ШАД Подготовка", target_dir: "documents/shad" },
-                    { name: "Python и ML", target_dir: "code/python_ml" }
-                ]);
             } catch(e) {}
         }
 
-        function renderProjects(projects) {
-            const container = document.getElementById('projectsListContainer');
-            container.innerHTML = projects.map((p, idx) => `
-                <div class="project-item" id="projRow_${idx}">
-                    <input type="text" class="proj-name" value="${p.name || ''}" placeholder="Проект">
-                    <span style="color: var(--text-muted); font-size: 12px;">➔</span>
-                    <input type="text" class="proj-dir" value="${p.target_dir || ''}" placeholder="Папка">
-                    <button type="button" class="btn btn-red" onclick="removeProjectRow(${idx})" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">🗑️</button>
-                </div>
-            `).join('');
-        }
-
-        window.addProjectRow = function() {
-            const container = document.getElementById('projectsListContainer');
-            const idx = container.children.length;
-            const div = document.createElement('div');
-            div.className = 'project-item';
-            div.id = 'projRow_' + idx;
-            div.innerHTML = `
-                <input type="text" class="proj-name" placeholder="Название темы">
-                <span style="color: var(--text-muted); font-size: 12px;">➔</span>
-                <input type="text" class="proj-dir" placeholder="Папка">
-                <button type="button" class="btn btn-red" onclick="removeProjectRow(${idx})" style="min-height: 28px; padding: 2px 8px; font-size: 11px;">🗑️</button>
-            `;
-            container.appendChild(div);
-            div.querySelector('input').focus();
-        };
-
-        window.removeProjectRow = async function(idx) {
-            const row = document.getElementById('projRow_' + idx);
-            if (row) row.remove();
-            await saveProfile(false);
-            showToast('🗑️ Тема удалена');
-        };
-
-        window.saveProfile = async function(showFeedback = true) {
-            const userName = document.getElementById('profUserName').value.trim();
-            const bio = document.getElementById('profBio').value.trim();
-            const rules = document.getElementById('profRules').value.trim();
-            
-            const projectItems = document.querySelectorAll('#projectsListContainer .project-item');
-            const activeProjects = [];
-            projectItems.forEach(row => {
-                const name = row.querySelector('.proj-name').value.trim();
-                const dir = row.querySelector('.proj-dir').value.trim();
-                if (name && dir) {
-                    activeProjects.push({ name: name, target_dir: dir, description: name });
-                }
-            });
-
-            try {
-                const res = await fetch('/api/profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_name: userName,
-                        bio: bio,
-                        active_projects: activeProjects,
-                        sorting_rules: rules
-                    })
-                });
-                if (res.ok && showFeedback) {
-                    showToast('💾 Профиль сохранен!');
-                }
-            } catch(e) {}
-        };
-
-        // Service Worker registration
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
-        }
-
-        // Init
-        loadTodayPlan();
-        refreshProposals();
-    
-    function setFolderPrompt(text) {
-      document.getElementById('folderAiInstruction').value = text;
-    }
-
-    async function submitProjectToAi() {
-      const gitUrl = document.getElementById('gitRepoUrl').value.trim();
-      const zipFile = document.getElementById('zipFolderInput').files[0];
-      const instruction = document.getElementById('folderAiInstruction').value.trim();
-      const btn = document.getElementById('btnProcessProject');
-      const statusMsg = document.getElementById('projectStatusMsg');
-      const resultBox = document.getElementById('projectResultBox');
-      const resultText = document.getElementById('projectResultText');
-
-      if (!gitUrl && !zipFile) {
-        alert('Пожалуйста, укажите Git URL или выберите Zip-архив с папкой!');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳ ИИ анализирует проект...</span>';
-      statusMsg.innerText = 'Клонирование/распаковка и глубокий анализ файлов...';
-      resultBox.classList.add('hidden');
-
-      try {
-        let res;
-        if (gitUrl) {
-          res = await fetch('/api/inbox/clone_repo', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ repo_url: gitUrl, instruction: instruction })
-          });
-        } else if (zipFile) {
-          const formData = new FormData();
-          formData.append('file', zipFile);
-          formData.append('instruction', instruction);
-          res = await fetch('/api/inbox/upload_zip', {
-            method: 'POST',
-            body: formData
-          });
-        }
-
-        const data = await res.json();
-        if (data.success) {
-          resultBox.classList.remove('hidden');
-          resultText.innerHTML = `
-            <p><strong>📦 Проект:</strong> ${data.project_title || 'Успешно'}</p>
-            <p><strong>📂 Категория архива:</strong> <code class="bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">${data.category}</code></p>
-            <p><strong>📝 Резюме ИИ:</strong> ${data.summary || ''}</p>
-            <p><strong>⚡ Выполненное действие:</strong> ${data.action_applied || ''}</p>
-          `;
-          statusMsg.innerText = '✅ Готово! Файлы перенесены в архив.';
-          document.getElementById('gitRepoUrl').value = '';
-          document.getElementById('zipFolderInput').value = '';
-          document.getElementById('folderAiInstruction').value = '';
-          loadArchiveTree();
-          loadInbox();
-        } else {
-          alert('Ошибка обработки: ' + (data.error || JSON.stringify(data)));
-          statusMsg.innerText = '❌ Ошибка при обработке.';
-        }
-      } catch (err) {
-        alert('Ошибка соединения: ' + err.message);
-        statusMsg.innerText = '❌ Ошибка запроса.';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>⚡ Запустить умную обработку</span>';
-      }
-    }
-
-  
-    
-        
-        async function deleteArchiveFile(category, filename) {
-            if (!confirm(`Вы действительно хотите удалить файл "${filename}"?`)) return;
-            
-            showToast(`🗑️ Удаление "${filename}"...`);
-            try {
-                const res = await fetch('/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ category: category, filename: filename })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast(`✅ Файл "${filename}" удален!`);
-                    loadArchiveTree();
-                    refreshProposals();
-                } else {
-                    showToast(`Ошибка: ${data.detail || 'Не удалось удалить'}`, true);
-                }
-            } catch (err) {
-                showToast('Ошибка удаления файла', true);
-            }
-        }
-
-
-        // --- Quick Notes & Global Clipboard Paste (Ctrl+V) ---
-        let currentNoteTag = 'general';
-
-        function setNoteTag(tag) {
-            currentNoteTag = tag;
-            const chips = document.querySelectorAll('#tagChips button');
-            chips.forEach(c => {
-                if (c.innerText.includes('#' + tag)) {
-                    c.classList.add('bg-blue-600', 'text-white');
-                    c.classList.remove('bg-slate-800', 'text-slate-300');
-                } else {
-                    c.classList.remove('bg-blue-600', 'text-white');
-                    c.classList.add('bg-slate-800', 'text-slate-300');
-                }
-            });
-            const textarea = document.getElementById('quickNoteText');
-            if (textarea) textarea.focus();
-        }
-
-        async function submitQuickNote() {
-            const textarea = document.getElementById('quickNoteText');
-            const text = textarea ? textarea.value.trim() : '';
-            if (!text) {
-                showToast('Введите текст заметки', true);
-                return;
-            }
-
-            showToast('⚡ Сохранение заметки...');
-            try {
-                const res = await fetch('/api/inbox/quick_note', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text, tag: currentNoteTag })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast('✅ Заметка сохранена в INBOX!');
-                    textarea.value = '';
-                    loadArchiveTree();
-                    refreshProposals();
-                } else {
-                    showToast('Ошибка: ' + (data.detail || 'Не удалось сохранить'), true);
-                }
-            } catch (err) {
-                showToast('Ошибка сохранения заметки', true);
-            }
-        }
-
-        // Ctrl+Enter shortcut for Quick Notes
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                const noteInput = document.getElementById('quickNoteText');
-                if (noteInput && document.activeElement === noteInput) {
-                    e.preventDefault();
-                    submitQuickNote();
-                }
-            }
-        });
-
-        // Global Paste (Ctrl+V) for Instant Screenshots & Images
-        window.addEventListener('paste', async (e) => {
-            // If focused on an input or textarea and text is pasted, allow default
-            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-                if (!e.clipboardData.files.length) return;
-            }
-
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    if (blob) {
-                        e.preventDefault();
-                        const now = new Date();
-                        const pad = (n) => String(n).padStart(2, '0');
-                        const timestamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-                        const filename = `screenshot_${timestamp}.png`;
-                        
-                        showToast('📸 Вставка скриншота из буфера...');
-                        const formData = new FormData();
-                        formData.append('file', blob, filename);
-
-                        try {
-                            const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                            const data = await res.json();
-                            showToast(`✅ Скриншот "${filename}" мгновенно сохранён!`);
-                            loadArchiveTree();
-                            refreshProposals();
-                        } catch (err) {
-                            showToast('Ошибка загрузки скриншота', true);
-                        }
-                        return;
-                    }
-                }
-            }
-        });
-
-        // Instant File Upload Handler
-        window.handleFileUpload = async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('file', file);
-            showToast(`📤 Загрузка "${file.name}"...`);
-
-            try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                showToast(`✅ Файл "${file.name}" сохранён в INBOX!`);
-                e.target.value = '';
-                loadArchiveTree();
-                refreshProposals();
-            } catch(err) {
-                showToast('Ошибка загрузки файла', true);
-            }
-        };
-
-
-        // PWA Native Android Install Handler
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const banner = document.getElementById('pwaInstallBanner');
-      if (banner) banner.classList.remove('hidden');
-    });
-
-    async function installPwaApp() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          showToast('✅ Приложение успешно установлено на рабочий стол!');
-          const banner = document.getElementById('pwaInstallBanner');
-          if (banner) banner.classList.add('hidden');
-        }
-        deferredPrompt = null;
-      } else {
-        alert('Чтобы установить приложение:\n1. Нажмите на 3 точки (меню браузера в правом верхнем углу)\n2. Выберите «Установить приложение» или «Добавить на главный экран»');
-      }
-    }
-
-  
-        // --- Remote Channels & Messengers Status Poller ---
-        async function loadRemoteChannels() {
-            try {
-                const res = await fetch('/api/remote/status');
-                if (!res.ok) return;
-                const data = await res.json();
-                
-                // Update Cloudflare Banner
-                const cfBanner = document.getElementById('cloudflareBanner');
-                if (cfBanner) {
-                    if (data.cloudflare_active && data.cloudflare_url) {
-                        cfBanner.style.display = 'block';
-                        document.getElementById('cfUrlText').textContent = data.cloudflare_url;
-                        document.getElementById('cfUrlText').href = data.cloudflare_url;
-                    } else {
-                        cfBanner.style.display = 'none';
-                    }
-                }
-
-                // Update Bot Status Cards
-                if (data.bots) {
-                    if (document.getElementById('vkBotStatus')) {
-                        document.getElementById('vkBotStatus').textContent = data.bots.vk.status_text;
-                    }
-                    if (document.getElementById('maxBotStatus')) {
-                        document.getElementById('maxBotStatus').textContent = data.bots.max.status_text;
-                    }
-                    if (document.getElementById('tgBotStatus')) {
-                        document.getElementById('tgBotStatus').textContent = data.bots.telegram.status_text;
-                    }
-                }
-            } catch(e) {}
-        }
-        setInterval(loadRemoteChannels, 5000);
-        setTimeout(loadRemoteChannels, 1000);
-
-        window.copyCfUrl = function() {
-            const url = document.getElementById('cfUrlText').textContent;
-            if (url && url.startsWith('http')) {
-                navigator.clipboard.writeText(url);
-                alert('Скопировано в буфер: ' + url);
-            }
-        };
-
-        window.saveRemoteBotTokens = async function(e) {
-            e.preventDefault();
-            const vkToken = document.getElementById('inputVkToken').value.trim();
-            const vkUserId = document.getElementById('inputVkUserId').value.trim();
-            const vkProxy = document.getElementById('inputVkProxy') ? document.getElementById('inputVkProxy').value.trim() : '';
-            const maxToken = document.getElementById('inputMaxToken').value.trim();
-            const maxProxy = document.getElementById('inputMaxProxy') ? document.getElementById('inputMaxProxy').value.trim() : '';
-            const tgToken = document.getElementById('inputTgToken').value.trim();
-            const tgUserId = document.getElementById('inputTgUserId').value.trim();
-
-            const res = await fetch('/api/remote/save_tokens', {
+        async function markTopic(trackId, topicName) {
+            await fetch('/api/tracks/complete_topic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    vk_token: vkToken || null,
-                    vk_user_id: vkUserId || null,
-                    vk_proxy: vkProxy || null,
-                    max_token: maxToken || null,
-                    max_proxy: maxProxy || null,
-                    tg_token: tgToken || null,
-                    tg_user_id: tgUserId || null
-                })
+                body: JSON.stringify({ track_id: trackId, topic_name: topicName })
             });
-            const data = await res.json();
-            alert(data.message || 'Токены сохранены!');
-            loadRemoteChannels();
-        };
+            showToast(`Прогресс сохранен!`);
+            loadTracks();
+        }
 
-</script>
-
-    <!-- 📄 УНИВЕРСАЛЬНЫЙ ПРОСМОТРЩИК ДОКУМЕНТОВ (PDF, MARKDOWN, CODE) -->
-    <div id="docViewerModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1.5rem;">
-        <div class="modal-card card" style="width: 100%; max-width: 950px; max-height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--r-md); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-            <!-- Шапка модалки -->
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface-hover);">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span id="docViewerIcon" style="font-size: 1.4rem;">📄</span>
-                    <div>
-                        <h3 id="docViewerTitle" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text);">Документ</h3>
-                        <span id="docViewerPath" style="font-size: 0.75rem; color: var(--text-muted);">path/to/file</span>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <a id="docViewerDownloadBtn" href="#" download class="btn-subtle" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
-                        📥 Скачать
-                    </a>
-                    <button onclick="closeDocViewer()" class="btn-subtle" style="padding: 0.4rem 0.8rem; font-size: 1.1rem; cursor: pointer;">
-                        ✕
-                    </button>
-                </div>
-            </div>
-            <!-- Тело документа -->
-            <div id="docViewerBody" style="flex: 1; overflow-y: auto; padding: 1.5rem; background: var(--surface); color: var(--text); font-size: 0.95rem; line-height: 1.6;">
-                <div style="text-align: center; color: var(--text-muted); padding: 3rem;">Загрузка документа...</div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- 👁️ UNIVERSAL FILE VIEWER MODAL -->
-    <div id="fileViewerModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
-        <div class="card" style="width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
-            <!-- Modal Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg-card);">
-                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-                    <span id="fvIcon" style="font-size: 20px;">📄</span>
-                    <div style="overflow: hidden;">
-                        <div id="fvTitle" style="font-weight: 700; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Файл</div>
-                        <div id="fvPath" style="font-size: 11px; color: var(--text-dim); font-family: monospace;">path</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <a id="fvDownloadBtn" href="#" download class="btn btn-subtle" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
-                        📥 Скачать
-                    </a>
-                    <button type="button" class="btn btn-subtle" onclick="closeFileViewer()" style="min-height: 28px; width: 32px; padding: 0; font-size: 16px;">
-                        ✖
-                    </button>
-                </div>
-            </div>
-
-            <!-- Modal Content Area -->
-            <div id="fvBody" style="flex: 1; overflow-y: auto; padding: 16px; background: var(--bg-input);">
-                <div style="text-align: center; color: var(--text-dim); padding: 40px;">Загрузка содержимого...</div>
-            </div>
-        </div>
-    </div>
-
-
-<!-- 🔐 AUTH LOGIN / REGISTER MODAL -->
-<div id="authModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#111827; border:1px solid rgba(255,255,255,0.15); border-radius:16px; width:90%; max-width:380px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,0.6); color:#f3f4f6;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="font-size:16px; font-weight:700; margin:0;" id="authModalTitle">🔐 Вход в HomeServer</h3>
-            <button onclick="closeAuthModal()" style="background:none; border:none; color:#9ca3af; font-size:20px; cursor:pointer;">&times;</button>
-        </div>
-        <form id="modalLoginForm" onsubmit="submitAuthLogin(event)">
-            <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:12px; color:#9ca3af; margin-bottom:4px;">Логин:</label>
-                <input type="text" id="authLoginUser" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; color:#fff; font-size:14px; outline:none;" placeholder="ardont / maxim">
-            </div>
-            <div style="margin-bottom:16px;">
-                <label style="display:block; font-size:12px; color:#9ca3af; margin-bottom:4px;">Пароль:</label>
-                <input type="password" id="authLoginPwd" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; color:#fff; font-size:14px; outline:none;" placeholder="пароль...">
-            </div>
-            <div id="authErrorMsg" style="color:#f43f5e; font-size:12px; margin-bottom:12px; display:none;"></div>
-            <button type="submit" style="width:100%; background:linear-gradient(135deg, #6366f1, #06b6d4); border:none; border-radius:8px; padding:12px; color:#fff; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 4px 14px rgba(99,102,241,0.4);">
-                Войти
-            </button>
-        </form>
-    </div>
-</div>
-
-<script>
-// Authentication Handlers in Dashboard
-async function initDashboardAuth() {
-    const token = localStorage.getItem('homeserver_token');
-    try {
-        const res = await fetch('/api/auth/me', {
-            headers: { 'Authorization': 'Bearer ' + (token || '') }
+        document.getElementById('btnSaveFocus').addEventListener('click', async () => {
+            const val = document.getElementById('dailyFocusInput').value;
+            await fetch('/api/tracks/focus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ focus: val })
+            });
+            showToast('Фокус дня обновлен!');
+            loadTracks();
         });
-        const user = await res.json();
-        if (user && user.username) {
-            document.getElementById('navUserName').innerText = '👤 ' + (user.display_name || user.username);
-            document.getElementById('btnAuthAction').innerText = '🚪 Выйти';
-            
-            const perms = user.permissions || {};
-            const isAdm = user.role === 'admin' || perms.is_admin;
-            const admBtn = document.getElementById('btnAdminPanelNav');
-            if (admBtn) admBtn.style.display = isAdm ? 'inline-flex' : 'none';
 
-            // Enforce UI Permission Pruning
-            document.querySelectorAll('[data-perm]').forEach(el => {
-                const reqPerm = el.getAttribute('data-perm');
-                if (perms[reqPerm] === false) {
-                    el.style.display = 'none';
-                } else {
-                    el.style.display = '';
+        // 4. File Tree in Sidebar
+        async function loadFileTree() {
+            try {
+                const res = await fetch('/api/files/tree');
+                const tree = await res.json();
+                const con = document.getElementById('fileTreeContainer');
+                con.innerHTML = '';
+
+                function renderNodes(nodes, parentEl) {
+                    nodes.forEach(n => {
+                        const div = document.createElement('div');
+                        div.className = 'tree-node';
+                        div.innerHTML = `<span>${n.is_dir ? '📁' : '📄'}</span> <span>${n.name}</span>`;
+                        parentEl.appendChild(div);
+                        if (n.is_dir && n.children && n.children.length > 0) {
+                            const indent = document.createElement('div');
+                            indent.className = 'tree-indent';
+                            renderNodes(n.children, indent);
+                            parentEl.appendChild(indent);
+                        }
+                    });
                 }
-            });
 
-            // If storage is disabled, hide all inbox/archive sections
-            if (perms.can_storage === false) {
-                document.querySelectorAll('.inbox-card, #inboxSection, #archiveSection, .storage-panel').forEach(s => s.style.display = 'none');
-            }
-        } else {
-            document.getElementById('navUserName').innerText = '👤 Гость';
-            document.getElementById('btnAuthAction').innerText = '🔑 Войти';
-            const admBtn = document.getElementById('btnAdminPanelNav');
-            if (admBtn) admBtn.style.display = 'none';
-        }
-    } catch(e){}
-}
-
-function handleAuthButtonClick() {
-    const token = localStorage.getItem('homeserver_token');
-    if (token) {
-        // Logout
-        fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-            localStorage.removeItem('homeserver_token');
-            localStorage.removeItem('homeserver_user');
-            window.location.reload();
-        });
-    } else {
-        openAuthModal();
-    }
-}
-
-function openAuthModal() {
-    document.getElementById('authModal').style.display = 'flex';
-}
-
-function closeAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
-}
-
-async function submitAuthLogin(e) {
-    e.preventDefault();
-    const u = document.getElementById('authLoginUser').value.trim();
-    const p = document.getElementById('authLoginPwd').value.trim();
-    const errEl = document.getElementById('authErrorMsg');
-    errEl.style.display = 'none';
-
-    try {
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
-        });
-        const data = await res.json();
-        if (data.status === 'ok') {
-            localStorage.setItem('homeserver_token', data.token);
-            localStorage.setItem('homeserver_user', JSON.stringify(data.user));
-            closeAuthModal();
-            window.location.reload();
-        } else {
-            errEl.innerText = data.message || 'Ошибка авторизации';
-            errEl.style.display = 'block';
-        }
-    } catch(err) {
-        errEl.innerText = 'Ошибка соединения: ' + err.message;
-        errEl.style.display = 'block';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', initDashboardAuth);
-</script>
-
-
-<script>
-function switchAuthGateTab(tab) {
-    const isLogin = tab === 'login';
-    document.getElementById('gateLoginForm').style.display = isLogin ? 'block' : 'none';
-    document.getElementById('gateRegForm').style.display = isLogin ? 'none' : 'block';
-    document.getElementById('tabAuthLoginBtn').style.background = isLogin ? 'rgba(255,255,255,0.1)' : 'none';
-    document.getElementById('tabAuthLoginBtn').style.color = isLogin ? '#fff' : '#9ca3af';
-    document.getElementById('tabAuthRegBtn').style.background = !isLogin ? 'rgba(255,255,255,0.1)' : 'none';
-    document.getElementById('tabAuthRegBtn').style.color = !isLogin ? '#fff' : '#9ca3af';
-    document.getElementById('gateErrorMsg').style.display = 'none';
-    document.getElementById('gateRegErrorMsg').style.display = 'none';
-}
-
-async function checkAuthGateStatus() {
-    const token = localStorage.getItem('homeserver_token');
-    const gate = document.getElementById('fullAuthGate');
-    
-    if (!token) {
-        if (gate) gate.style.display = 'flex';
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/auth/me', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (res.status === 401 || res.status === 403) {
-            localStorage.removeItem('homeserver_token');
-            if (gate) gate.style.display = 'flex';
-            return;
-        }
-        const user = await res.json();
-        if (user && user.username) {
-            if (gate) gate.style.display = 'none';
-            document.getElementById('navUserName').innerText = '👤 ' + (user.display_name || user.username);
-            document.getElementById('btnAuthAction').innerText = '🚪 Выйти';
-            
-            const perms = user.permissions || {};
-            const isAdm = user.role === 'admin' || perms.is_admin;
-            const admBtn = document.getElementById('btnAdminPanelNav');
-            if (admBtn) admBtn.style.display = isAdm ? 'inline-flex' : 'none';
-
-            // UI Guarding: hide restricted modules
-            document.querySelectorAll('[data-perm]').forEach(el => {
-                const reqPerm = el.getAttribute('data-perm');
-                if (perms[reqPerm] === false) {
-                    el.style.display = 'none';
-                } else {
-                    el.style.display = '';
+                if (tree.documents) {
+                    const docRoot = document.createElement('div');
+                    docRoot.innerHTML = '<strong>📚 documents/</strong>';
+                    con.appendChild(docRoot);
+                    const ind = document.createElement('div');
+                    ind.className = 'tree-indent';
+                    renderNodes(tree.documents, ind);
+                    con.appendChild(ind);
                 }
+            } catch(e) {}
+        }
+
+        // 5. Load Study Guides & NotebookLM
+        async function loadStudyGuides() {
+            try {
+                const res = await fetch('/api/study_guides');
+                const list = await res.json();
+                const con = document.getElementById('studyGuidesList');
+                con.innerHTML = '';
+
+                list.forEach(item => {
+                    const el = document.createElement('div');
+                    el.style.cssText = 'background:var(--bg-elevated); padding:8px 10px; border-radius:4px; font-size:12px; cursor:pointer; border:1px solid var(--border); transition:all 0.15s;';
+                    el.innerHTML = `
+                        <div style="font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.format.toUpperCase()} • ${item.created_at}</div>
+                    `;
+                    el.addEventListener('click', () => openStudyGuide(item.filename));
+                    con.appendChild(el);
+                });
+            } catch(e) {}
+        }
+
+        async function openStudyGuide(filename) {
+            try {
+                const res = await fetch(`/api/study_guides/${filename}`);
+                const d = await res.json();
+                const area = document.getElementById('studyPreviewArea');
+                
+                // Convert basic markdown to HTML
+                let formatted = d.content
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+
+                area.innerHTML = formatted;
+            } catch(e) {}
+        }
+
+        document.getElementById('btnGenStudyGuide').addEventListener('click', async () => {
+            const topic = document.getElementById('studyTopicInput').value.trim();
+            const fmt = document.getElementById('studyFormatSelect').value;
+            if (!topic) { alert('Введите тему для создания Study Guide'); return; }
+
+            showToast('⏳ NotebookLM синтезирует учебный материал...');
+            const res = await fetch('/api/study_guides/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic, format: fmt })
             });
-
-            if (perms.can_storage === false) {
-                document.querySelectorAll('.inbox-card, #inboxSection, #archiveSection, .storage-panel').forEach(s => s.style.display = 'none');
-            }
-
-            // Hide private admin settings tab if not admin
-            const settingsTabBtn = document.querySelector('[data-tab="tabSettings"]');
-            if (settingsTabBtn && !isAdm) {
-                settingsTabBtn.style.display = 'none';
-            }
-        } else {
-            if (gate) gate.style.display = 'flex';
-        }
-    } catch(err) {
-        console.log('Auth check error:', err);
-    }
-}
-
-async function submitGateLogin(e) {
-    e.preventDefault();
-    const u = document.getElementById('gateLoginUser').value.trim();
-    const p = document.getElementById('gateLoginPwd').value.trim();
-    const errEl = document.getElementById('gateErrorMsg');
-    const submitBtn = document.getElementById('btnGateSubmitLogin');
-    errEl.style.display = 'none';
-    submitBtn.innerText = 'Вход...';
-
-    try {
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
+            const d = await res.json();
+            showToast('✅ Study Guide успешно сгенерирован и сохранен!');
+            loadStudyGuides();
+            document.getElementById('studyTopicInput').value = '';
         });
-        const data = await res.json();
-        if (data.status === 'ok') {
-            localStorage.setItem('homeserver_token', data.token);
-            localStorage.setItem('homeserver_user', JSON.stringify(data.user));
-            document.getElementById('fullAuthGate').style.display = 'none';
-            window.location.reload();
-        } else {
-            errEl.innerText = data.message || 'Неверный логин или пароль';
-            errEl.style.display = 'block';
+
+        // 6. Chat Logic
+        let attachedFile = null;
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                attachedFile = e.target.files[0];
+                showToast(`📎 Прикреплен: ${attachedFile.name}`);
+            }
         }
-    } catch(err) {
-        errEl.innerText = 'Ошибка соединения с сервером: ' + err.message;
-        errEl.style.display = 'block';
-    } finally {
-        submitBtn.innerText = 'Войти в систему';
-    }
-}
 
-async function submitGateRegister(e) {
-    e.preventDefault();
-    const u = document.getElementById('gateRegUser').value.trim();
-    const p = document.getElementById('gateRegPwd').value.trim();
-    const n = document.getElementById('gateRegName').value.trim();
-    const errEl = document.getElementById('gateRegErrorMsg');
-    errEl.style.display = 'none';
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg && !attachedFile) return;
 
-    try {
-        const res = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p, display_name: n })
+            appendMsg('user', msg + (attachedFile ? `\n📎 [Файл: ${attachedFile.name}]` : ''));
+            input.value = '';
+
+            const loadingId = appendMsg('assistant', '⏳ <i>Джарвис думает...</i>');
+            const modelVal = document.getElementById('modelSelector').value;
+
+            try {
+                let resData;
+                if (attachedFile) {
+                    const fd = new FormData();
+                    fd.append('message', msg);
+                    fd.append('model', modelVal);
+                    fd.append('file', attachedFile);
+                    attachedFile = null;
+                    const r = await fetch('/api/chat', { method: 'POST', body: fd });
+                    resData = await r.json();
+                } else {
+                    const r = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: msg, model: modelVal })
+                    });
+                    resData = await r.json();
+                }
+
+                document.getElementById(loadingId)?.remove();
+                appendMsg('assistant', resData.response || resData.reply || 'Готово.');
+            } catch(e) {
+                document.getElementById(loadingId)?.remove();
+                appendMsg('assistant', `⚠️ Ошибка: ${e.message}`);
+            }
+        }
+
+        function appendMsg(role, text) {
+            const con = document.getElementById('chatMessages');
+            const id = 'msg_' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `message-bubble ${role}`;
+            
+            let formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+                
+            div.innerHTML = formatted;
+            con.appendChild(div);
+            con.scrollTop = con.scrollHeight;
+            return id;
+        }
+
+        function sendQuickPrompt(text) {
+            document.getElementById('chatInput').value = text;
+            sendChatMessage();
+        }
+
+        document.getElementById('btnSendChat').addEventListener('click', sendChatMessage);
+        document.getElementById('chatInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
         });
-        const data = await res.json();
-        if (data.status === 'ok') {
-            alert('Регистрация успешна! Теперь войдите с вашим паролем.');
-            switchAuthGateTab('login');
-            document.getElementById('gateLoginUser').value = u;
-        } else {
-            errEl.innerText = data.message || 'Ошибка регистрации';
-            errEl.style.display = 'block';
-        }
-    } catch(err) {
-        errEl.innerText = 'Ошибка соединения: ' + err.message;
-        errEl.style.display = 'block';
-    }
-}
 
-document.addEventListener('DOMContentLoaded', checkAuthGateStatus);
-</script>
-
+        // Init
+        loadModels();
+        loadTracks();
+        loadFileTree();
+        loadStudyGuides();
+    </script>
 </body>
 </html>

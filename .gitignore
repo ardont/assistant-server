@@ -10,6 +10,7 @@ config/users_db.json
 config/sessions.json
 config/invites.json
 config/token_stats.json
+config/user_tracks.json
 config/tunnel_status.json
 config/chat_history_*.json
 config/memory_*.json

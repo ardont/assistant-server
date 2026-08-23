@@ -504,94 +504,94 @@ def tool_list_installed_skills() -> str:
 # 📓 NOTEBOOKLM & CLOUD CODE TOOLS
 # ------------------------------------------------------------------------------
 
-def tool_notebooklm_synthesize(source_text_or_path: str, format_type: str = "briefing") -> str:
-    """
-    Генерирует структурированные артефакты знаний в стиле Google NotebookLM:
-    format_type: 'briefing' (аналитическая записка), 'faq' (вопросы и ответы), 
-                 'study_guide' (учебное руководство), 'podcast_script' (сценарий аудио-подкаста).
-    """
+def tool_notebooklm_synthesize(topic_or_text: str, format_type: str = "study_guide", track: str = "shad_math", **kwargs) -> str:
+    """Генерирует структурированные учебные материалы (Study Guide, FAQ, Briefing Doc, Problem Set) в стиле Google NotebookLM и сохраняет их на сервере."""
     from core.chat_agent import query_llm_text
     
-    # Read if path
-    p = Path(source_text_or_path.strip())
-    content = ""
-    if p.exists() and p.is_file():
-        try:
-            content = p.read_text(encoding="utf-8", errors="replace")[:12000]
-        except Exception:
-            content = f"Файл {p.name}"
-    else:
-        content = source_text_or_path[:12000]
-
-    prompts = {
-        "briefing": f"Ты — NotebookLM Research Assistant. Подготовь подробную аналитическую записку (Briefing Doc) по материалам:\n{content}\n\nСтруктура: 1. Ключевая суть 2. Важнейшие факты и данные 3. Стратегические выводы 4. Практические шаги.",
-        "faq": f"Ты — NotebookLM Research Assistant. Сформируй исчерпывающий список часто задаваемых вопросов и подробных ответов (FAQ) на основе материалов:\n{content}",
-        "study_guide": f"Ты — NotebookLM Учебный Ментор. Составь пошаговое учебное руководство (Study Guide) с контрольными вопросами и глоссарием ключевых терминов по материалам:\n{content}",
-        "podcast_script": f"Ты — автор подкаста в стиле NotebookLM Audio Overview. Напиши живой, увлекательный сценарий диалога двух ведущих (Алексей и Елена), обсуждающих тему:\n{content}\n\nДиалог должен быть неформальным, с яркими аналогиями, юмором и глубоким раскрытием темы."
+    clean_topic = topic_or_text.strip()
+    fmt = format_type.lower().strip()
+    
+    instructions = {
+        "study_guide": "Создай исчерпывающий, академически строгий и понятный Study Guide: 1. Введение и интуиция. 2. Ключевые математические формулы и определения. 3. Пошаговые алгоритмы и доказательства. 4. Разбор 2-3 практических задач с подробным решением (уровень ШАД). 5. Частые ошибки и ловушки на экзаменах. 6. Контрольные вопросы.",
+        "faq": "Создай список из 10 самых важных вопросов и глубоких ответов (FAQ) по данной теме, раскрывающих неочевидные нюансы в Data Science/ML.",
+        "briefing_doc": "Создай компактный Executive Briefing Doc: ключевые тезисы, архитектура, выводы и чек-лист действий.",
+        "podcast_script": "Напиши живой сценарий диалога двух экспертов в формате NotebookLM Audio Overview, которые простым языком с метафорами объясняют эту тему.",
+        "problem_set": "Составь подборку из 5 задач уровня вступительных экзаменов в ШАД (Яндекс) с полными решениями и выкладками."
     }
-
-    selected_prompt = prompts.get(format_type, prompts["briefing"])
-    sys_inst = "Ты — профессиональный исследовательский интеллект NotebookLM. Пиши структурированно, содержательно и на чистом русском языке."
+    
+    inst = instructions.get(fmt, instructions["study_guide"])
+    sys_prompt = f"Ты — экспертный исследовательский движок в стиле Google NotebookLM и преподаватель ШАД. {inst}"
+    user_prompt = f"Тема / Исходные материалы для синтеза:\n{clean_topic}"
     
     try:
-        report = query_llm_text(sys_inst, selected_prompt)
-        # Save output to documents
-        out_dir = BASE_DIR / "data" / "documents"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_file = out_dir / f"NotebookLM_{format_type}_{int(time.time())}.md"
-        out_file.write_text(report, encoding="utf-8")
-        return f"✅ Анализ NotebookLM [{format_type}] сформирован и сохранен в {out_file.name}:\n\n{report[:1000]}...\n\n[Полный документ сохранен: {out_file}]"
-    except Exception as e:
-        return f"Ошибка синтеза NotebookLM: {e}"
-
-def tool_cloud_code_runner(code_str: str, filename: str = "cloud_script.py") -> str:
-    """
-    Создает и безопасно запускает Python/Jupyter скрипт анализа данных в виртуальном окружении HomeServer.
-    """
-    import subprocess
-    code_dir = BASE_DIR / "data" / "code"
-    code_dir.mkdir(parents=True, exist_ok=True)
-    target_file = code_dir / filename
-    
-    try:
-        target_file.write_text(code_str, encoding="utf-8")
-        venv_py = BASE_DIR / "venv" / "Scripts" / "python.exe"
-        if not venv_py.exists():
-            venv_py = Path(sys.executable)
-            
-        res = subprocess.run(
-            [str(venv_py), str(target_file)],
-            capture_output=True,
-            text=True,
-            timeout=45,
-            cwd=str(BASE_DIR)
-        )
+        content = query_llm_text(sys_prompt, user_prompt, username="ardont")
         
-        output = res.stdout if res.stdout else ""
-        if res.stderr:
-            output += f"\n[STDERR]:\n{res.stderr}"
-            
-        return f"🚀 Cloud Code запущен ({filename}) [Exit Code: {res.returncode}]:\n{output[:1500]}"
+        sg_dir = BASE_DIR / "documents" / "study_guides"
+        sg_dir.mkdir(parents=True, exist_ok=True)
+        
+        import re, time
+        clean_name = re.sub(r'[^a-zA-Z0-9а-яА-Я_]+', '_', clean_topic[:40]).strip('_')
+        timestamp = time.strftime("%Y%m%d_%H%M")
+        file_name = f"{timestamp}_{fmt}_{clean_name}.md"
+        file_path = sg_dir / file_name
+        
+        header = f"# 📚 {clean_topic}\n**Тип документа:** {fmt.upper()} | **Направление:** {track} | **Дата создания:** {time.strftime('%Y-%m-%d %H:%M:%S')}\n*Сгенерировано HomeServer NotebookLM Research Engine для @ardont*\n\n---\n\n"
+        file_path.write_text(header + content, encoding="utf-8")
+        
+        index_file = sg_dir / "index.json"
+        index_data = []
+        if index_file.exists():
+            try:
+                index_data = json.loads(index_file.read_text(encoding="utf-8"))
+            except Exception:
+                index_data = []
+        
+        index_data.insert(0, {
+            "title": clean_topic,
+            "filename": file_name,
+            "format": fmt,
+            "track": track,
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "size_kb": round(len(content) / 1024, 1)
+        })
+        index_file.write_text(json.dumps(index_data[:50], ensure_ascii=False, indent=2), encoding="utf-8")
+        
+        return f"✅ **{fmt.upper()} успешно создан и сохранен!**\n📁 Файл: `documents/study_guides/{file_name}`\n\n" + content
     except Exception as e:
-        return f"Ошибка запуска Cloud Code: {e}"
+        return f"Ошибка генерации NotebookLM материала: {e}"
+
+def tool_cloud_code_runner(script_code: str, language: str = "python", timeout_sec: int = 15, **kwargs) -> str:
+    """Запускает код на Python / Bash в изолированном контексте и возвращает вывод."""
+    import subprocess, tempfile
+    if language.lower() not in ["python", "py"]:
+        return f"Поддерживается только запуск Python скриптов. Запрошен: {language}"
+    try:
+        with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False, encoding="utf-8") as tf:
+            tf.write(script_code)
+            tmp_name = tf.name
+        res = subprocess.run([sys.executable, tmp_name], capture_output=True, text=True, timeout=timeout_sec)
+        Path(tmp_name).unlink(missing_ok=True)
+        return f"=== STDOUT ===\n{res.stdout}\n=== STDERR ===\n{res.stderr}\nExit Code: {res.returncode}"
+    except Exception as e:
+        return f"Ошибка выполнения скрипта: {e}"
 
 ALL_AGENT_TOOLS = {
-    "tool_search_skills": tool_search_skills,
-    "tool_install_skill": tool_install_skill,
-    "tool_list_installed_skills": tool_list_installed_skills,
-    "tool_download_file": tool_download_file,
-    "tool_create_zip_archive": tool_create_zip_archive,
-    "tool_notebooklm_synthesize": tool_notebooklm_synthesize,
-    "tool_cloud_code_runner": tool_cloud_code_runner,
-    "tool_send_file_to_user": tool_send_file_to_user,
-    "tool_web_search": tool_web_search,
-    "tool_scrape_webpage": tool_scrape_webpage,
-    "tool_osint_lookup": tool_osint_lookup,
-    "tool_git_clone": tool_git_clone,
-    "tool_run_terminal_command": tool_run_terminal_command,
-    "tool_run_python_script": tool_run_python_script,
-    "tool_write_code_file": tool_write_code_file,
-    "tool_leadgen_extract_contacts": tool_leadgen_extract_contacts,
-    "tool_export_leads_csv": tool_export_leads_csv,
-    "tool_deep_research": tool_deep_research
+    "web_search": tool_web_search,
+    "scrape_webpage": tool_scrape_webpage,
+    "osint_lookup": tool_osint_lookup,
+    "git_clone": tool_git_clone,
+    "run_terminal_command": tool_run_terminal_command,
+    "run_python_script": tool_run_python_script,
+    "write_code_file": tool_write_code_file,
+    "leadgen_extract_contacts": tool_leadgen_extract_contacts,
+    "export_leads_csv": tool_export_leads_csv,
+    "deep_research": tool_deep_research,
+    "download_file": tool_download_file,
+    "create_zip_archive": tool_create_zip_archive,
+    "send_file_to_user": tool_send_file_to_user,
+    "search_skills": tool_search_skills,
+    "install_skill": tool_install_skill,
+    "list_installed_skills": tool_list_installed_skills,
+    "notebooklm_synthesize": tool_notebooklm_synthesize,
+    "cloud_code_runner": tool_cloud_code_runner
 }

@@ -1677,3 +1677,140 @@ async def admin_bind_my_vk(request: Request):
     from core.auth_manager import bind_vk_id_to_user
     ok, msg = bind_vk_id_to_user("ardont", "816140871")
     return {"status": "ok" if ok else "error", "message": msg}
+
+
+# ------------------------------------------------------------------------------
+# 🎯 GROWTH TRACKS & NOTEBOOKLM STUDY GUIDES API
+# ------------------------------------------------------------------------------
+
+@app.get("/api/tracks")
+async def get_growth_tracks(request: Request):
+    user = get_current_user_from_req(request)
+    username = user.get("username", "ardont") if user else "ardont"
+    from core.growth_tracker import load_user_tracks
+    return load_user_tracks(username)
+
+@app.post("/api/tracks/focus")
+async def set_growth_focus(request: Request):
+    user = get_current_user_from_req(request)
+    username = user.get("username", "ardont") if user else "ardont"
+    data = await request.json()
+    focus_text = data.get("focus", "").strip()
+    from core.growth_tracker import update_daily_focus
+    update_daily_focus(username, focus_text)
+    return {"status": "ok", "message": f"Фокус дня обновлен: {focus_text}"}
+
+@app.post("/api/tracks/complete_topic")
+async def api_complete_topic(request: Request):
+    user = get_current_user_from_req(request)
+    username = user.get("username", "ardont") if user else "ardont"
+    data = await request.json()
+    track_id = data.get("track_id", "shad_math")
+    topic_name = data.get("topic_name", "")
+    from core.growth_tracker import mark_topic_completed
+    ok, msg = mark_topic_completed(username, track_id, topic_name)
+    return {"status": "ok" if ok else "error", "message": msg}
+
+@app.get("/api/study_guides")
+async def list_study_guides(request: Request):
+    sg_dir = BASE_DIR / "documents" / "study_guides"
+    sg_dir.mkdir(parents=True, exist_ok=True)
+    index_file = sg_dir / "index.json"
+    if index_file.exists():
+        try:
+            return json.loads(index_file.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    # Fallback to scanning dir
+    items = []
+    for f in sg_dir.glob("*.md"):
+        items.append({
+            "title": f.stem.replace("_", " "),
+            "filename": f.name,
+            "format": "study_guide",
+            "size_kb": round(f.stat().st_size / 1024, 1),
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(f.stat().st_mtime))
+        })
+    return items
+
+@app.get("/api/study_guides/{filename}")
+async def get_study_guide_content(filename: str, request: Request):
+    sg_path = BASE_DIR / "documents" / "study_guides" / filename
+    if sg_path.exists() and sg_path.is_file():
+        return {"status": "ok", "content": sg_path.read_text(encoding="utf-8", errors="ignore")}
+    raise HTTPException(status_code=404, detail="Документ не найден")
+
+@app.post("/api/study_guides/generate")
+async def generate_study_guide_api(request: Request):
+    data = await request.json()
+    topic = data.get("topic", "Линейная алгебра")
+    fmt = data.get("format", "study_guide")
+    track = data.get("track", "shad_math")
+    from core.agent_tools import tool_notebooklm_synthesize
+    res = tool_notebooklm_synthesize(topic, format_type=fmt, track=track)
+    return {"status": "ok", "result": res}
+
+@app.get("/api/files/tree")
+async def get_files_tree(request: Request):
+    """Возвращает дерево рабочих файлов для левого сайдбара Antigravity."""
+    def build_tree(path: Path, max_depth=3, cur_depth=0):
+        if cur_depth >= max_depth or not path.exists():
+            return []
+        nodes = []
+        try:
+            for item in sorted(path.iterdir(), key=lambda x: (not x.is_dir(), x.name)):
+                if item.name.startswith(".") or item.name in ["venv", "__pycache__", "git", "gh"]:
+                    continue
+                node = {
+                    "name": item.name,
+                    "path": str(item.relative_to(BASE_DIR)).replace("\\", "/"),
+                    "is_dir": item.is_dir()
+                }
+                if item.is_dir():
+                    node["children"] = build_tree(item, max_depth, cur_depth + 1)
+                else:
+                    node["size_kb"] = round(item.stat().st_size / 1024, 1)
+                nodes.append(node)
+        except Exception:
+            pass
+        return nodes
+
+    return {
+        "documents": build_tree(BASE_DIR / "documents"),
+        "inbox": build_tree(BASE_DIR / "inbox"),
+        "skills": build_tree(BASE_DIR / "skills")
+    }
+
+@app.get("/api/models/available")
+async def get_available_models(request: Request):
+    """Возвращает список доступных моделей с авто-проверкой OmniRoute."""
+    omni_url = os.getenv("OMNIROUTE_URL", "http://localhost:20128/v1").rstrip("/")
+    omni_key = os.getenv("OMNIROUTE_API_KEY", "")
+    omni_online = False
+    omni_models = []
+    
+    try:
+        req = urllib.request.Request(f"{omni_url}/models", headers={"Authorization": f"Bearer {omni_key}"})
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(req, timeout=2, context=ssl_ctx) as r:
+            m_data = json.loads(r.read().decode("utf-8"))
+            omni_models = [m.get("id") for m in m_data.get("data", [])]
+            omni_online = True
+    except Exception:
+        pass
+
+    gemini_models = [
+        {"id": "gemini-3.1-flash-lite", "name": "⚡ Gemini 3.1 Flash Lite (Ультрабыстрый)", "provider": "Google AI"},
+        {"id": "gemini-3.5-flash", "name": "🚀 Gemini 3.5 Flash (Сбалансированный)", "provider": "Google AI"},
+        {"id": "gemini-3.7-flash", "name": "🧠 Gemini 3.7 Flash (Интеллектуальный)", "provider": "Google AI"},
+        {"id": "gemini-2.5-pro", "name": "🔬 Gemini 2.5 Pro (Глубокий анализ)", "provider": "Google AI"}
+    ]
+    
+    return {
+        "omniroute_online": omni_online,
+        "omniroute_models": omni_models,
+        "builtin_models": gemini_models,
+        "default": "omniroute:default" if omni_online else "gemini-3.1-flash-lite"
+    }

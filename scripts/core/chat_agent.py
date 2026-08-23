@@ -33,6 +33,7 @@ sys.path.append(str(BASE_DIR / "scripts"))
 from core.privacy_shield import sanitize_text
 from core.audio_transcriber import transcribe_audio_file
 from core.agent_tools import ALL_AGENT_TOOLS
+from core.growth_tracker import get_tracks_summary_for_prompt, update_daily_focus, mark_topic_completed
 from core.memory_engine import (
     load_memory, save_memory, get_chat_mode, set_chat_mode,
     add_pinned_fact, extract_and_save_facts, slice_prompt_memory,
@@ -261,11 +262,59 @@ def query_llm_text(system_prompt: str, user_prompt: str, username: str = "ardont
         return res[0]
     return str(res)
 
+
+def query_omniroute_raw(system_prompt: str, user_prompt: str, model_name: str = "default") -> Optional[Tuple[str, str, int, int]]:
+    """Опрашивает локальный шлюз OmniRoute (http://localhost:20128/v1), если он запущен."""
+    omni_url = os.getenv("OMNIROUTE_URL", "http://localhost:20128/v1").rstrip("/")
+    omni_key = os.getenv("OMNIROUTE_API_KEY", "")
+    
+    target_m = model_name if model_name and model_name not in ["default", "omniroute"] else "gemini-2.5-flash"
+    payload = {
+        "model": target_m,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": 0.5
+    }
+    headers = {"Content-Type": "application/json"}
+    if omni_key:
+        headers["Authorization"] = f"Bearer {omni_key}"
+        
+    try:
+        req = urllib.request.Request(
+            f"{omni_url}/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers
+        )
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        
+        with urllib.request.urlopen(req, timeout=6, context=ssl_ctx) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            choices = data.get("choices", [])
+            if choices:
+                text = choices[0]["message"]["content"]
+                usage = data.get("usage", {})
+                p_tok = usage.get("prompt_tokens", len(user_prompt)//4)
+                c_tok = usage.get("completion_tokens", len(text)//4)
+                return text, f"omniroute:{target_m}", p_tok, c_tok
+    except Exception:
+        pass
+    return None
+
 def query_gemini_raw(system_prompt: str, user_prompt: str, username: str = "ardont", requested_model: Optional[str] = None) -> Tuple[str, str, int, int]:
     gemini_keys, _ = get_keys()
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
+
+    if requested_model and "omni" in requested_model.lower():
+        omni_res = query_omniroute_raw(system_prompt, user_prompt, model_name=requested_model.replace("omniroute:", ""))
+        if omni_res:
+            record_token_usage(username, omni_res[1], omni_res[2], omni_res[3])
+            return omni_res
 
     # Quota check
     allowed, msg = check_user_quota(username, "gemini-2.5-flash")
