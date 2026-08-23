@@ -1,0 +1,45 @@
+[
+  {
+    "id": "task_enable_rdp",
+    "name": "🖥️ Включить RDP (Удаленный стол + Пароль 1234)",
+    "description": "Включает службу Remote Desktop (порт 3389), настраивает брандмауэр и устанавливает пароль 1234 для входа",
+    "command": "\"C:\\HomeServer\\venv\\Scripts\\python.exe\" \"C:/HomeServer/scripts/tasks/enable_rdp_runner.py\"",
+    "category": "system",
+    "status": "stopped",
+    "schedule": "manual"
+  },
+  {
+    "id": "task_crypto_tracker",
+    "name": "📈 Крипто-Монитор (Bitcoin & Crypto Live)",
+    "description": "Периодически опрашивает CoinDesk/Binance API, отслеживает курсы криптовалют и выводит сводку",
+    "command": "\"C:\\HomeServer\\venv\\Scripts\\python.exe\" \"C:/HomeServer/scripts/tasks/crypto_runner.py\"",
+    "category": "crypto",
+    "status": "stopped",
+    "schedule": "manual"
+  },
+  {
+    "id": "task_backup_server",
+    "name": "💾 Резервное копирование (Auto Backup)",
+    "description": "Создает сжатый zip-архив папок data/ и config/ в C:/HomeServer/backups",
+    "command": "\"C:\\HomeServer\\venv\\Scripts\\python.exe\" \"C:/HomeServer/scripts/tasks/backup_runner.py\"",
+    "category": "maintenance",
+    "status": "stopped",
+    "schedule": "manual"
+  },
+  {
+    "id": "task_deep_scan",
+    "name": "🔍 Глубокий аудит и сканирование INBOX",
+    "description": "Запускает повторный анализ всех входящих файлов и генерацию отчета Gemini",
+    "command": "\"C:\\HomeServer\\venv\\Scripts\\python.exe\" \"C:/HomeServer/scripts/tasks/file_ai_organizer.py\"",
+    "category": "ai",
+    "status": "stopped",
+    "schedule": "manual"
+  },
+  {
+    "id": "task_omniroute",
+    "name": "🌐 OmniRoute AI Gateway",
+    "script": "tasks/omniroute_runner.py",
+    "description": "Локальный агрегатор бесплатных токенов и моделей (порт 20128)",
+    "auto_restart": false
+  }
+]

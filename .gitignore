@@ -1,0 +1,65 @@
+# ==============================================================================
+# 🛡️ SECURITY & PRIVACY: SENSITIVE FILES & LOCAL RUNTIME (DO NOT COMMIT)
+# ==============================================================================
+.env
+*.env
+*.env.local
+config/.env
+config/vk_backup_codes.txt
+config/users_db.json
+config/sessions.json
+config/invites.json
+config/token_stats.json
+config/tunnel_status.json
+config/chat_history_*.json
+config/memory_*.json
+config/memory.json
+config/user_profile.json
+
+# Personal Data, Audio, Transcripts & User Storage
+data/
+inbox/
+inbox/*
+archive/
+archive/*
+*.m4a
+*.mp3
+*.ogg
+*.wav
+chat_history*.json
+daily_plan*.json
+inbox_proposals*.json
+quiz_progress*.json
+calendar_events*.json
+INBOX_*.md
+*.rdp
+
+# Logs & Runtime Diagnostics
+logs/
+*.log
+*.log.*
+
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Large Binaries & Portable Tools
+tools/
+*.exe
+*.dll
+*.apk
+*.zip
+*.tar.gz
+
+# IDE & OS Artifacts
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

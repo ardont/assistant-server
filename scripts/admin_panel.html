@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeServer AI Hub — Центр Управления и Безопасности</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-full: 9999px;
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #171c35 0%, var(--bg-primary) 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header.admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(10, 14, 23, 0.85);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+    }
+    .brand-title h1 {
+      font-size: 16px; font-weight: 700;
+      background: linear-gradient(90deg, #fff, #c084fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-title p { font-size: 11.5px; color: var(--text-muted); }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 8px 14px; border-radius: var(--radius-sm);
+      font-size: 12.5px; font-weight: 500; text-decoration: none; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: var(--transition-fast);
+    }
+    .btn-nav:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .admin-badge {
+      background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #c084fc; padding: 5px 12px; border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* Tabs Navigation */
+    .admin-tabs {
+      display: flex; gap: 8px; max-width: 1100px; width: 100%;
+      margin: 18px auto 0; padding: 0 16px;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+      color: var(--text-muted); padding: 10px 18px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: var(--transition-fast);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+      border-color: var(--accent-indigo); color: #fff;
+    }
+
+    /* Container */
+    main.admin-container {
+      max-width: 1100px; width: 100%; margin: 16px auto 32px;
+      padding: 0 16px; display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .tab-content { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.2s ease; }
+    .tab-content.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass-card {
+      background: var(--bg-card); backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px); border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .card-title {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+    }
+    .card-title h2 { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+    /* Tables */
+    .table-responsive { overflow-x: auto; }
+    table.custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    table.custom-table th {
+      background: rgba(255, 255, 255, 0.02); padding: 10px 14px;
+      font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color);
+    }
+    table.custom-table td {
+      padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); vertical-align: middle;
+    }
+
+    /* Switch */
+    .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15); transition: .2s; border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+      background-color: white; transition: .2s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--accent-emerald); }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 6px 12px; border-radius: var(--radius-sm);
+      font-size: 11.5px; cursor: pointer; transition: var(--transition-fast);
+    }
+    .btn-action:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-action.delete { color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      border: none; color: #fff; padding: 10px 20px; border-radius: var(--radius-sm);
+      font-weight: 600; font-size: 13px; cursor: pointer; transition: var(--transition-fast);
+    }
+    .btn-primary:hover { opacity: 0.92; }
+
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;
+    }
+    .form-group label { display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control {
+      width: 100%; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm); color: #fff; padding: 8px 12px; font-size: 13px; outline: none;
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: #1e293b;
+      border: 1px solid var(--border-color); color: #fff; padding: 12px 20px;
+      border-radius: var(--radius-sm); font-size: 13px; display: none; z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="brand">
+      <div class="brand-logo">👑</div>
+      <div class="brand-title">
+        <h1>Центр Безопасности & Администрирования</h1>
+        <p>HomeServer Multi-User, Token Quotas & VK Whitelist Hub</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="admin-badge" id="adminUserBadge">👤 ardont (Главный Админ)</span>
+      <a href="/" class="btn-nav">🏠 На Главную</a>
+      <button class="btn-nav" id="btnLogout">🚪 Выйти</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="admin-tabs">
+    <button class="tab-btn active" data-tab="tabUsers" id="btnTabUsers">👥 Пользователи & Доступ</button>
+    <button class="tab-btn" data-tab="tabTokens" id="btnTabTokens">📊 Расход Токенов & Квоты</button>
+    <button class="tab-btn" data-tab="tabVK" id="btnTabVK">📲 VK Whitelist & Инвайты</button>
+  </div>
+
+  <!-- Main Container -->
+  <main class="admin-container">
+
+    <!-- TAB 1: USERS & PERMISSIONS -->
+    <div id="tabUsers" class="tab-content active">
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>👥 Учетные Записи и Гранулярные Права (Feature Toggles)</h2>
+          <button class="btn-action" id="btnRefreshUsers">🔄 Обновить</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="custom-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Роль</th>
+                <th title="Доступ к AI-диалогам">💬 Чат</th>
+                <th title="Доступ к хранилищу и INBOX">📁 Хранилище</th>
+                <th title="Выполнение скриптов и терминала">⚡ Скрипты</th>
+                <th title="Установка навыков">🧩 Скиллы</th>
+                <th title="Права администратора">👑 Админ</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add User Card -->
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>➕ Зарегистрировать Нового Пользователя</h2>
+        </div>
+        <form id="addUserForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Логин (username):</label>
+              <input type="text" id="newUsername" class="form-control" required placeholder="например: alex">
+            </div>
+            <div class="form-group">
+              <label>Пароль:</label>
+              <input type="password" id="newPassword" class="form-control" required placeholder="пароль...">
+            </div>
+            <div class="form-group">
+              <label>Отображаемое имя:</label>
+              <input type="text" id="newDisplayName" class="form-control" placeholder="Алексей">
+            </div>
+            <div class="form-group">
+              <label>Роль:</label>
+              <select id="newRole" class="form-control">
+                <option value="user">Пользователь</option>
+                <option value="admin">Администратор</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; gap:16px; margin:12px 0;">
+            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="permChat" checked> 💬 Чат
+            </label>
+            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="permStorage"> 📁 Хранилище
+            </label>
+            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="permScripts"> ⚡ Скрипты
+            </label>
+            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="permSkills"> 🧩 Скиллы
+            </label>
+          </div>
+          <button type="submit" class="btn-primary">➕ Создать Пользователя</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 2: TOKEN ACCOUNTING & QUOTAS -->
+    <div id="tabTokens" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>📊 Статистика Использования Токенов & Лимиты</h2>
+          <button class="btn-action" id="btnRefreshTokens">🔄 Обновить</button>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+          Контроль расхода токенов моделей Google Gemini & DeepSeek по каждому пользователю с возможностью назначения жестких квот.
+        </p>
+
+        <div class="table-responsive">
+          <table class="custom-table" id="tokensTable">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Всего Токенов</th>
+                <th>Запросов</th>
+                <th>Текущий Лимит (Квота)</th>
+                <th>Модели</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="tokensTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: VK WHITELIST & INVITES -->
+    <div id="tabVK" class="tab-content">
+      <div class="glass-card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <h2 style="font-size:15px; font-weight:600; color:#fff;">📲 Управление Доступом VK & Инвайт-коды</h2>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+              Бот в VK отвечает только пользователям с привязанным VK ID или тем, кто ввел инвайт-код.
+            </p>
+          </div>
+          <button class="btn-primary" id="btnGenInvite">➕ Создать Инвайт-код</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="custom-table" id="invitesTable">
+            <thead>
+              <tr>
+                <th>Инвайт-код</th>
+                <th>Целевой аккаунт</th>
+                <th>Статус</th>
+                <th>Кем активирован (VK ID)</th>
+                <th>Дата создания</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="invitesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bind VK ID manually -->
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>🔗 Прямая Привязка VK ID к Пользователю</h2>
+        </div>
+        <form id="bindVkForm" style="display:flex; gap:12px; align-items:flex-end;">
+          <div class="form-group" style="flex:1;">
+            <label>Логин пользователя в системе:</label>
+            <input type="text" id="bindUsername" class="form-control" placeholder="maxim / ardont" required>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>VK ID пользователя (число):</label>
+            <input type="text" id="bindVkId" class="form-control" placeholder="например: 12345678" required>
+          </div>
+          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px;">Привязать VK ID</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('homeserver_token');
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (token || '')
+    };
+
+    function showToast(text, isError = false) {
+      const t = document.getElementById('toast');
+      t.innerText = text;
+      t.style.borderColor = isError ? 'var(--accent-rose)' : 'var(--accent-emerald)';
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    // Tabs switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const target = document.getElementById(btn.getAttribute('data-tab'));
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // 1. Load Users
+    async function loadUsers() {
+      const tbody = document.getElementById('usersTbody');
+      try {
+        const res = await fetch('/api/admin/users', { headers: authHeaders });
+        const data = await res.json();
+        const users = data.users || [];
+        tbody.innerHTML = '';
+
+        users.forEach(u => {
+          const perms = u.permissions || {};
+          const isMe = u.username === 'ardont';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <strong>${u.display_name || u.username}</strong>
+              <div style="font-size:11px; color:var(--text-muted);">@${u.username} • VK: ${u.vk_user_id || 'не привязан'}</div>
+            </td>
+            <td><span style="font-size:11px; font-weight:700; color:${u.role === 'admin' ? '#c084fc' : '#93c5fd'}; text-transform:uppercase;">${u.role}</span></td>
+            <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_chat" ${perms.can_chat ? 'checked' : ''}><span class="slider"></span></label></td>
+            <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_storage" ${perms.can_storage ? 'checked' : ''}><span class="slider"></span></label></td>
+            <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_execute_scripts" ${perms.can_execute_scripts ? 'checked' : ''}><span class="slider"></span></label></td>
+            <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_manage_skills" ${perms.can_manage_skills ? 'checked' : ''}><span class="slider"></span></label></td>
+            <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="is_admin" ${perms.is_admin ? 'checked' : ''} ${isMe ? 'disabled' : ''}><span class="slider"></span></label></td>
+            <td>
+              <button class="btn-action btn-vk-edit" data-user="${u.username}" data-vk="${u.vk_user_id || ''}" title="Изменить VK ID">✏️ VK ID</button>
+              ${u.vk_user_id ? `<button class="btn-action delete btn-vk-del" data-user="${u.username}" title="Отвязать VK">✕ VK</button>` : ''}
+              <button class="btn-action btn-pwd" data-user="${u.username}">🔑 Пароль</button>
+              ${!isMe ? `<button class="btn-action delete btn-del" data-user="${u.username}">🗑️</button>` : ''}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Event listeners for permissions
+        document.querySelectorAll('.perm-toggle').forEach(chk => {
+          chk.addEventListener('change', async (e) => {
+            const user = e.target.getAttribute('data-user');
+            const perm = e.target.getAttribute('data-perm');
+            await fetch('/api/admin/users/update_permissions', {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify({ username: user, permissions: { [perm]: e.target.checked } })
+            });
+            showToast(`Права ${user} [${perm}] изменены`);
+          });
+        });
+
+        document.querySelectorAll('.btn-pwd').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const user = btn.getAttribute('data-user');
+            const newP = prompt(`Новый пароль для ${user}:`);
+            if (newP && newP.length >= 3) {
+              await fetch('/api/admin/users/update_password', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ username: user, password: newP })
+              });
+              showToast(`Пароль для ${user} обновлен!`);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-del').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const user = btn.getAttribute('data-user');
+            if (confirm(`Удалить пользователя ${user}?`)) {
+              await fetch(`/api/admin/users/${user}`, { method: 'DELETE', headers: authHeaders });
+              showToast(`Пользователь ${user} удален`);
+              loadUsers();
+            }
+          });
+        });
+
+      } catch(e){}
+    }
+
+    // 2. Load Tokens & Quotas
+    async function loadTokens() {
+      const tbody = document.getElementById('tokensTbody');
+      try {
+        const res = await fetch('/api/admin/tokens/stats', { headers: authHeaders });
+        const data = await res.json();
+        const users = data.users || {};
+        tbody.innerHTML = '';
+
+        Object.keys(users).forEach(uName => {
+          const u = users[uName];
+          const tr = document.createElement('tr');
+          const quotaStr = u.token_quota === -1 ? 'Безлимит (Админ)' : `${u.total_tokens} / ${u.token_quota}`;
+          const modelsStr = Object.keys(u.models_usage || {}).join(', ') || 'нет запросов';
+
+          tr.innerHTML = `
+            <td><strong>@${uName}</strong></td>
+            <td><span style="color:var(--accent-cyan); font-weight:700;">${u.total_tokens.toLocaleString()}</span></td>
+            <td>${u.requests_count}</td>
+            <td><strong>${quotaStr}</strong></td>
+            <td style="font-size:11px; color:var(--text-muted);">${modelsStr}</td>
+            <td>
+              <button class="btn-action btn-quota" data-user="${uName}" data-quota="${u.token_quota}">⚙️ Лимит</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.btn-quota').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const uName = btn.getAttribute('data-user');
+            const curQ = btn.getAttribute('data-quota');
+            const newQ = prompt(`Установите лимит токенов для @${uName} (-1 = безлимит):`, curQ);
+            if (newQ !== null) {
+              await fetch('/api/admin/tokens/set_quota', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ username: uName, quota: parseInt(newQ) })
+              });
+              showToast(`Лимит для @${uName} установлен на ${newQ}`);
+              loadTokens();
+            }
+          });
+        });
+
+      } catch(e){}
+    }
+
+    // 3. Load Invites
+    async function loadInvites() {
+      const tbody = document.getElementById('invitesTbody');
+      try {
+        const res = await fetch('/api/admin/vk/invites', { headers: authHeaders });
+        const data = await res.json();
+        const list = data.invites || [];
+        tbody.innerHTML = '';
+
+        list.forEach(inv => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code style="background:rgba(255,255,255,0.08); padding:3px 6px; border-radius:4px; font-weight:700; color:#93c5fd;">${inv.code}</code></td>
+            <td>@${inv.target_username || 'любой'}</td>
+            <td><span style="color:${inv.is_active ? 'var(--accent-emerald)' : 'var(--text-muted)'}; font-weight:600;">${inv.is_active ? '🟢 Активен' : '⚪ Использован'}</span></td>
+            <td>${inv.claimed_by_vk ? `VK ID: ${inv.claimed_by_vk}` : '—'}</td>
+            <td style="font-size:11px; color:var(--text-muted);">${inv.created_at}</td>
+            <td>
+              <button class="btn-action" onclick="navigator.clipboard.writeText('${inv.code}'); showToast('Инвайт-код скопирован!');">📋 Скопировать</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch(e){}
+    }
+
+    // Generate Invite
+    document.getElementById('btnGenInvite').addEventListener('click', async () => {
+      const targetUser = prompt('Укажите логин пользователя (или оставьте пустым для нового):', 'maxim');
+      if (targetUser !== null) {
+        const r = await fetch('/api/admin/vk/generate_invite', {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({ target_username: targetUser, note: 'Admin generated' })
+        });
+        const d = await r.json();
+        showToast(`Инвайт-код создан: ${d.code}`);
+        loadInvites();
+      }
+    });
+
+    // Bind VK Form
+    document.getElementById('bindVkForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('bindUsername').value.trim();
+      const v = document.getElementById('bindVkId').value.trim();
+      const r = await fetch('/api/admin/vk/bind', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ username: u, vk_id: v })
+      });
+      const d = await r.json();
+      showToast(d.message);
+      loadUsers();
+    });
+
+    // Add User Form
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('newUsername').value.trim();
+      const p = document.getElementById('newPassword').value.trim();
+      const dn = document.getElementById('newDisplayName').value.trim();
+      const role = document.getElementById('newRole').value;
+
+      const perms = {
+        can_chat: document.getElementById('permChat').checked,
+        can_storage: document.getElementById('permStorage').checked,
+        can_execute_scripts: document.getElementById('permScripts').checked,
+        can_manage_skills: document.getElementById('permSkills').checked,
+        is_admin: role === 'admin'
+      };
+
+      const res = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ username: u, password: p, display_name: dn, role: role, permissions: perms })
+      });
+      const data = await res.json();
+      showToast(data.message);
+      document.getElementById('addUserForm').reset();
+      loadUsers();
+    });
+
+    document.getElementById('btnRefreshUsers').addEventListener('click', loadUsers);
+    document.getElementById('btnRefreshTokens').addEventListener('click', loadTokens);
+    document.getElementById('btnTabTokens').addEventListener('click', loadTokens);
+    document.getElementById('btnTabVK').addEventListener('click', loadInvites);
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem('homeserver_token');
+      localStorage.removeItem('homeserver_user');
+      window.location.href = '/';
+    });
+
+    
+    // 4. Global VK Config
+    async function loadGlobalVkConfig() {
+      try {
+        const res = await fetch('/api/admin/vk/config', { headers: authHeaders });
+        const data = await res.json();
+        document.getElementById('cfgVkUserId').value = data.vk_user_id || '';
+        document.getElementById('cfgVkGroupId').value = data.vk_group_id || '';
+        document.getElementById('cfgVkToken').value = data.vk_bot_token || '';
+      } catch(e){}
+    }
+
+    document.getElementById('globalVkConfigForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const uId = document.getElementById('cfgVkUserId').value.trim();
+      const gId = document.getElementById('cfgVkGroupId').value.trim();
+      const tok = document.getElementById('cfgVkToken').value.trim();
+      const res = await fetch('/api/admin/vk/config', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ vk_user_id: uId, vk_group_id: gId, vk_bot_token: tok })
+      });
+      const d = await res.json();
+      showToast(d.message);
+    });
+
+    document.getElementById('btnReloadVkConfig').addEventListener('click', loadGlobalVkConfig);
+    document.getElementById('btnTabVK').addEventListener('click', () => { loadInvites(); loadGlobalVkConfig(); });
+
+    // Init
+    loadUsers();
+    loadGlobalVkConfig();
+    loadTokens();
+    loadInvites();
+  </script>
+</body>
+</html>

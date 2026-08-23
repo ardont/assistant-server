@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HomeServer AI Hub — VK Mini App</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- VK Bridge -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(31, 41, 55, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      
+      --accent-blue: #3b82f6;
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      
+      --vk-blue: #0077ff;
+      --vk-blue-hover: #0066dd;
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+      
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #171e38 0%, var(--bg-primary) 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Glass Header */
+    header.vk-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(11, 15, 25, 0.82);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      background: linear-gradient(90deg, #fff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px 4px 4px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-color);
+    }
+
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius-full);
+      background: var(--vk-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* Main Container */
+    main.vk-main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 74px;
+    }
+
+    /* Tab Content Switcher */
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-normal);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Mode Pill Switcher */
+    .mode-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .mode-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mode-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition-fast);
+    }
+
+    .mode-pill.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(6, 182, 212, 0.3));
+      border-color: var(--accent-indigo);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Chat Messages Box */
+    .chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 280px;
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .chat-msg {
+      max-width: 86%;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .chat-msg.assistant {
+      align-self: flex-start;
+      background: rgba(31, 41, 55, 0.8);
+      border: 1px solid var(--border-color);
+      color: #f3f4f6;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--vk-blue), #0055cc);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 119, 255, 0.3);
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition-fast);
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent-indigo);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      border: none;
+      color: #fff;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .btn-send:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    /* Skills Grid */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .skill-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: var(--transition-fast);
+    }
+
+    .skill-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .skill-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .skill-info h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .skill-info p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .btn-skill-install {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      align-self: flex-start;
+    }
+
+    .btn-skill-install.installed {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      cursor: default;
+    }
+
+    /* Drivers & Files Hub */
+    .driver-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .driver-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      gap: 10px;
+    }
+
+    .driver-meta h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .driver-meta p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--vk-blue), #0055cc);
+      border: none;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Bottom Navigation Bar */
+    nav.vk-navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(11, 15, 25, 0.92);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 12px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .nav-item.active {
+      color: var(--accent-cyan);
+    }
+
+    /* Status Badges */
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="vk-header">
+    <div class="header-brand">
+      <div class="brand-icon">🚀</div>
+      <div class="brand-text">
+        <h1>HomeServer AI Hub</h1>
+        <p>VK Mini App • 24/7 Supervisor</p>
+      </div>
+    </div>
+    <div class="header-user" id="vkUserBadge">
+      <div class="user-avatar" id="userAvatar">VK</div>
+      <span class="user-name" id="userName">ВКонтакте</span>
+    </div>
+  </header>
+
+  <!-- Main Viewports -->
+  <main class="vk-main">
+
+    <!-- TAB 1: AI CHAT & MENTOR -->
+    <div id="tabChat" class="tab-pane active">
+      <!-- Mode Pills -->
+      <div class="mode-pills" id="modePills">
+        <div class="mode-pill active" data-mode="mentor" id="btnModeMentor">🎓 Наставник</div>
+        <div class="mode-pill" data-mode="multiagent" id="btnModeMulti">👥 Мультиагент</div>
+        <div class="mode-pill" data-mode="incognito" id="btnModeIncog">🕵️ Инкогнито</div>
+        <div class="mode-pill" data-mode="work" id="btnModeWork">⚡ Работа</div>
+      </div>
+
+      <!-- Chat Card -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>💬 Диалог с AI-Ассистентом</span>
+          </div>
+          <span class="status-badge" id="chatModeBadge">Режим: НАСТАВНИК</span>
+        </div>
+
+        <div class="chat-box" id="chatMessages">
+          <div class="chat-msg assistant">
+            👋 Привет! Я твой автономный ассистент и наставник на базе Gemini & DeepSeek.<br><br>
+            Чем могу помочь? Могу найти и скачать программы, настроить сканеры, запустить команду или дать разбор задачи.
+          </div>
+        </div>
+
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Напишите задачу или вопрос..." autocomplete="off">
+          <button class="btn-send" id="btnSendChat">
+            <span>Отправить</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: SKILLS CATALOG -->
+    <div id="tabSkills" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🧩 Каталог Навыков (Skills Store)</span>
+          </div>
+          <button class="btn-skill-install" id="btnRefreshSkills" style="align-self:auto;">🔄 Обновить</button>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+          Автономные расширения для выполнения специализированных задач. Устанавливаются в один клик.
+        </p>
+
+        <div class="skills-grid" id="skillsContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DRIVERS & INBOX HUB -->
+    <div id="tabDrivers" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📦 Сканеры и Драйверы (Готовые ZIP)</span>
+          </div>
+          <span class="status-badge">Готовы к загрузке</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+          Чистые индивидуальные архивы для закрытых контуров (белые списки, без повреждения кодировок):
+        </p>
+
+        <div class="driver-list">
+          <div class="driver-item">
+            <div class="driver-meta">
+              <h4>Honeywell Orbit HSM USB Serial v3.5.20</h4>
+              <p>Для Orbit 7120 / 7190g (Win10/11 x64/x86) • 21.77 МБ</p>
+            </div>
+            <a href="/api/download/file?path=C:/Users/user/Desktop/Драйверы_для_сканеров_ZIP/01_Honeywell_HSM_USB_Serial_Driver_v3.5.20.zip" class="btn-download" download id="btnDlHoneywell">⬇️ Скачать ZIP</a>
+          </div>
+
+          <div class="driver-item">
+            <div class="driver-meta">
+              <h4>Mertech / Sunmi / SuperLead UsbCom V2.15.0</h4>
+              <p>Основной драйвер для сканеров Mertech Sunmi NS021 • 3.93 МБ</p>
+            </div>
+            <a href="/api/download/file?path=C:/Users/user/Desktop/Драйверы_для_сканеров_ZIP/02_Mertech_Sunmi_SuperLead_UsbComDriver_V2.15.0.zip" class="btn-download" download id="btnDlSunmi">⬇️ Скачать ZIP</a>
+          </div>
+
+          <div class="driver-item">
+            <div class="driver-meta">
+              <h4>Штрихкоды настройки Sunmi NS021 (HTML)</h4>
+              <p>Управляющие коды: USB-COM, Честный Знак GS, инверсия • 4.4 КБ</p>
+            </div>
+            <a href="/api/download/file?path=C:/Users/user/Desktop/Драйверы_для_сканеров_ZIP/04_Штрихкоды_настройки_Sunmi_Mertech_NS021.zip" class="btn-download" download id="btnDlBarcodes">⬇️ Скачать ZIP</a>
+          </div>
+
+          <div class="driver-item">
+            <div class="driver-meta">
+              <h4>Полный комплект инструкций и кодов</h4>
+              <p>Пошаговый мануал настройки в 1С и Windows 11 • 10.3 КБ</p>
+            </div>
+            <a href="/api/download/file?path=C:/Users/user/Desktop/Драйверы_для_сканеров_ZIP/06_Инструкция_по_настройке_в_1С_и_Windows11.zip" class="btn-download" download id="btnDlManuals">⬇️ Скачать ZIP</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TELEMETRY & SYSTEM -->
+    <div id="tabSystem" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📊 Телеметрия Сервера и Статус</span>
+          </div>
+          <span class="status-badge" id="systemHealthBadge">ONLINE 24/7</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;" id="telemetryGrid">
+          <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+            <div style="font-size:11px; color:var(--text-muted);">Память Сервера (RAM)</div>
+            <div style="font-size:16px; font-weight:700; color:var(--accent-cyan);" id="statRam">Загрузка...</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+            <div style="font-size:11px; color:var(--text-muted);">Режим Ассистента</div>
+            <div style="font-size:16px; font-weight:700; color:var(--accent-emerald);" id="statMode">MENTOR</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <h4 style="font-size:12px; font-weight:600; margin-bottom:6px;">🧠 Долгосрочная память (Pinned Facts):</h4>
+          <div id="memoryFactsList" style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+            Загрузка памяти...
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="vk-navbar">
+    <button class="nav-item active" data-tab="tabChat" id="navChat">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      <span>Чат / AI</span>
+    </button>
+    <button class="nav-item" data-tab="tabSkills" id="navSkills">
+      <svg viewBox="0 0 24 24"><path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5z"/></svg>
+      <span>Скиллы</span>
+    </button>
+    <button class="nav-item" data-tab="tabDrivers" id="navDrivers">
+      <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+      <span>Файлы</span>
+    </button>
+    <button class="nav-item" data-tab="tabSystem" id="navSystem">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Статус</span>
+    </button>
+  </nav>
+
+  <script>
+    // 1. VK Bridge Initialization
+    if (typeof vkBridge !== 'undefined') {
+      try {
+        vkBridge.send('VKWebAppInit');
+        vkBridge.subscribe((e) => {
+          if (e.detail.type === 'VKWebAppUpdateConfig') {
+            const scheme = e.detail.data.scheme;
+            if (scheme === 'bright_light') {
+              document.body.style.background = '#f0f2f5';
+              document.body.style.color = '#111827';
+            }
+          }
+        });
+        vkBridge.send('VKWebAppGetUserInfo').then((user) => {
+          if (user && user.first_name) {
+            document.getElementById('userName').innerText = user.first_name;
+            if (user.photo_100) {
+              document.getElementById('userAvatar').innerHTML = `<img src="${user.photo_100}" style="width:100%;height:100%;border-radius:50%;">`;
+            }
+          }
+        }).catch(() => {});
+      } catch (err) {
+        console.log('VK Bridge init fallback:', err);
+      }
+    }
+
+    // 2. Tab Navigation
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        const pane = document.getElementById(targetTab);
+        if (pane) pane.classList.add('active');
+
+        if (typeof vkBridge !== 'undefined') {
+          try { vkBridge.send('VKWebAppTapticImpactOccurred', { style: 'light' }); } catch(e){}
+        }
+      });
+    });
+
+    // 3. Mode Pills
+    document.querySelectorAll('.mode-pill').forEach(pill => {
+      pill.addEventListener('click', async () => {
+        document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const mode = pill.getAttribute('data-mode');
+        document.getElementById('chatModeBadge').innerText = 'Режим: ' + mode.toUpperCase();
+        
+        try {
+          await fetch('/api/memory/mode', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({mode: mode})
+          });
+        } catch(e){}
+      });
+    });
+
+    // 4. Chat Send Action
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const chatBox = document.getElementById('chatMessages');
+      
+      // Append user msg
+      const uMsg = document.createElement('div');
+      uMsg.className = 'chat-msg user';
+      uMsg.innerText = text;
+      chatBox.appendChild(uMsg);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Temporary typing indicator
+      const tMsg = document.createElement('div');
+      tMsg.className = 'chat-msg assistant';
+      tMsg.innerText = '⏳ AI думает и выполняет инструменты...';
+      chatBox.appendChild(tMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: text})
+        });
+        const data = await res.json();
+        tMsg.innerHTML = (data.response || data.reply || 'Готово!').replace(/\n/g, '<br>');
+      } catch (err) {
+        tMsg.innerText = '⚠️ Ошибка подключения к серверу: ' + err.message;
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.getElementById('btnSendChat').addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendChatMessage();
+    });
+
+    // 5. Load Skills
+    async function loadSkills() {
+      const container = document.getElementById('skillsContainer');
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Загрузка каталога...</div>';
+      try {
+        const res = await fetch('/api/skills');
+        const data = await res.json();
+        const catalog = data.catalog || [];
+        const installed = new Set(data.installed || []);
+
+        container.innerHTML = '';
+        catalog.forEach(s => {
+          const isInst = installed.has(s.id);
+          const card = document.createElement('div');
+          card.className = 'skill-card';
+          card.innerHTML = `
+            <div class="skill-header">
+              <div class="skill-info">
+                <h3>${s.name}</h3>
+                <p>${s.description}</p>
+              </div>
+            </div>
+            <button class="btn-skill-install ${isInst ? 'installed' : ''}" data-id="${s.id}">
+              ${isInst ? '✓ Установлен' : '📥 Установить'}
+            </button>
+          `;
+          container.appendChild(card);
+        });
+
+        // Attach install handlers
+        container.querySelectorAll('.btn-skill-install:not(.installed)').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const sid = btn.getAttribute('data-id');
+            btn.innerText = '⏳ Установка...';
+            try {
+              const r = await fetch('/api/skills/install', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({skill_id: sid})
+              });
+              const d = await r.json();
+              btn.innerText = '✓ Установлен';
+              btn.classList.add('installed');
+            } catch(e) {
+              btn.innerText = 'Ошибка';
+            }
+          });
+        });
+      } catch(e) {
+        container.innerHTML = '<div style="color:var(--accent-rose);font-size:12px;">Ошибка загрузки каталога.</div>';
+      }
+    }
+
+    document.getElementById('btnRefreshSkills').addEventListener('click', loadSkills);
+    document.getElementById('navSkills').addEventListener('click', loadSkills);
+
+    // 6. Load System Telemetry & Memory
+    async function loadTelemetry() {
+      try {
+        const [hRes, mRes] = await Promise.all([
+          fetch('/api/health').then(r => r.json()),
+          fetch('/api/memory').then(r => r.json())
+        ]);
+        
+        if (hRes.memory_rss_mb) {
+          document.getElementById('statRam').innerText = `${hRes.memory_rss_mb.toFixed(1)} MB (${hRes.memory_percent.toFixed(0)}%)`;
+        }
+        if (mRes.chat_mode) {
+          document.getElementById('statMode').innerText = mRes.chat_mode.toUpperCase();
+        }
+        if (mRes.pinned_facts) {
+          const factsBox = document.getElementById('memoryFactsList');
+          if (mRes.pinned_facts.length === 0) {
+            factsBox.innerText = 'Пока нет сохраненных фактов.';
+          } else {
+            factsBox.innerHTML = mRes.pinned_facts.map(f => `• [${f.date || 'Факт'}] ${f.fact}`).join('<br>');
+          }
+        }
+      } catch(e){}
+    }
+    document.getElementById('navSystem').addEventListener('click', loadTelemetry);
+
+    // Initial load
+    loadTelemetry();
+  </script>
+</body>
+</html>
