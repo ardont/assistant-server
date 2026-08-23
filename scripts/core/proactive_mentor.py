@@ -78,7 +78,7 @@ def check_and_send_proactive_checkin(force_slot: str = "") -> Optional[str]:
         return None
 
     mem["proactive_mentor_settings"] = settings
-    save_memory(mem)
+    save_memory(clean_user, mem)
 
     # Generate message
     msg = get_mentor_dialog_prompt(slot_to_trigger)
