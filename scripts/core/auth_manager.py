@@ -63,6 +63,7 @@ def init_users_db() -> Dict[str, Any]:
                         "last_login": "",
                         "is_active": True,
                         "vk_user_id": "",
+                        "max_user_id": "",
                         "permissions": {
                             "can_chat": True,
                             "can_storage": True,
@@ -84,6 +85,7 @@ def init_users_db() -> Dict[str, Any]:
                         "last_login": "",
                         "is_active": True,
                         "vk_user_id": "",
+                        "max_user_id": "",
                         "permissions": {
                             "can_chat": True,
                             "can_storage": False,
@@ -93,6 +95,11 @@ def init_users_db() -> Dict[str, Any]:
                         }
                     }
                     updated = True
+                # Миграция: добавляем max_user_id существующим пользователям
+                for uname, udata in users.items():
+                    if "max_user_id" not in udata:
+                        udata["max_user_id"] = ""
+                        updated = True
                 if updated:
                     data["users"] = users
                     save_users_db(data)
@@ -155,6 +162,10 @@ def save_users_db(data: Dict[str, Any]) -> bool:
     except Exception as e:
         print(f"[Auth Error] Failed to save users_db.json: {e}")
         return False
+
+# Алиас для совместимости с web_server.py
+def load_users_db() -> Dict[str, Any]:
+    return init_users_db()
 
 # Session Management
 def load_sessions() -> Dict[str, Any]:
@@ -432,6 +443,43 @@ def unbind_vk_id_from_user(username: str) -> Tuple[bool, str]:
         users[clean_user]["vk_user_id"] = ""
         save_users_db(db)
         return True, f"VK ID отвязан от @{clean_user}."
+    return False, "Пользователь не найден."
+
+def get_user_by_max_id(max_user_id: str) -> Optional[Dict[str, Any]]:
+    """Находит пользователя по MAX user_id."""
+    clean_max = str(max_user_id).strip()
+    if not clean_max:
+        return None
+    db = init_users_db()
+    for u in db.get("users", {}).values():
+        if str(u.get("max_user_id", "")).strip() == clean_max and u.get("is_active", True):
+            safe = dict(u)
+            safe.pop("password_hash", None)
+            safe.pop("salt", None)
+            return safe
+    return None
+
+def bind_max_id_to_user(username: str, max_user_id: str) -> Tuple[bool, str]:
+    """Привязывает MAX user_id к пользователю."""
+    clean_user = username.strip().lower()
+    clean_max = str(max_user_id).strip()
+    db = init_users_db()
+    users = db.get("users", {})
+    if clean_user not in users:
+        return False, f"Пользователь '{clean_user}' не найден."
+    users[clean_user]["max_user_id"] = clean_max
+    save_users_db(db)
+    return True, f"MAX ID {clean_max} успешно привязан к @{clean_user}."
+
+def unbind_max_id_from_user(username: str) -> Tuple[bool, str]:
+    """Отвязывает MAX user_id от пользователя."""
+    clean_user = username.strip().lower()
+    db = init_users_db()
+    users = db.get("users", {})
+    if clean_user in users:
+        users[clean_user]["max_user_id"] = ""
+        save_users_db(db)
+        return True, f"MAX ID отвязан от @{clean_user}."
     return False, "Пользователь не найден."
 
 def list_all_invites() -> List[Dict[str, Any]]:

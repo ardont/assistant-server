@@ -1680,6 +1680,87 @@ async def admin_bind_my_vk(request: Request):
 
 
 # ------------------------------------------------------------------------------
+# 💬 ADMIN: MAX BOT CONFIG & BINDING
+# ------------------------------------------------------------------------------
+
+@app.get("/api/admin/max/config")
+async def admin_get_max_config(request: Request):
+    user = get_current_user_from_req(request)
+    if not user or not user.get("permissions", {}).get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+    env_path = CONFIG_DIR / ".env"
+    token = ""
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("MAX_BOT_TOKEN="):
+                token = line.split("=", 1)[1].strip()
+    # Маскируем токен для отображения
+    masked = token[:8] + "..." + token[-6:] if len(token) > 14 else ("***" if token else "")
+    return {"max_bot_token": token, "max_bot_token_masked": masked, "is_configured": bool(token)}
+
+@app.post("/api/admin/max/config")
+async def admin_save_max_config(request: Request):
+    user = get_current_user_from_req(request)
+    if not user or not user.get("permissions", {}).get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+    body = await request.json()
+    new_token = body.get("max_bot_token", "").strip().strip("'\"")
+    env_path = CONFIG_DIR / ".env"
+    lines = []
+    if env_path.exists():
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    updated = False
+    new_lines = []
+    for line in lines:
+        if line.startswith("MAX_BOT_TOKEN="):
+            new_lines.append(f"MAX_BOT_TOKEN={new_token}")
+            updated = True
+        else:
+            new_lines.append(line)
+    if not updated:
+        new_lines.append(f"MAX_BOT_TOKEN={new_token}")
+    env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+    return {"status": "ok", "message": "Токен MAX Bot сохранён в .env. Перезапустите сервер для применения."}
+
+@app.post("/api/admin/max/bind")
+async def admin_bind_max(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    data = await request.json()
+    username = data.get("username", "")
+    max_id = str(data.get("max_id", "")).strip()
+    from core.auth_manager import bind_max_id_to_user
+    ok, msg = bind_max_id_to_user(username, max_id)
+    return {"status": "ok" if ok else "error", "message": msg}
+
+@app.delete("/api/admin/max/unbind/{username}")
+async def admin_unbind_max(username: str, request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Требуются права администратора"}, status_code=403)
+    from core.auth_manager import unbind_max_id_from_user
+    ok, msg = unbind_max_id_from_user(username)
+    return {"status": "ok" if ok else "error", "message": msg}
+
+@app.post("/api/admin/users/update_max")
+async def admin_update_user_max(request: Request):
+    user = get_current_user_from_req(request)
+    if not user or not user.get("permissions", {}).get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Доступ только для администраторов")
+    body = await request.json()
+    target_user = body.get("username", "").strip()
+    max_id = str(body.get("max_id", "")).strip().strip("'\"")
+    if not target_user:
+        raise HTTPException(status_code=400, detail="Не указан пользователь")
+    from core.auth_manager import bind_max_id_to_user, unbind_max_id_from_user
+    if max_id:
+        ok, msg = bind_max_id_to_user(target_user, max_id)
+    else:
+        ok, msg = unbind_max_id_from_user(target_user)
+    return {"status": "ok" if ok else "error", "message": msg}
+
+# ------------------------------------------------------------------------------
 # 🎯 GROWTH TRACKS & NOTEBOOKLM STUDY GUIDES API
 # ------------------------------------------------------------------------------
 

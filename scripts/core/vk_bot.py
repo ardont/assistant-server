@@ -397,5 +397,13 @@ def run_vk_bot_polling():
             print(f"[VK Bot Critical Loop Error]: {e}. Перезапуск через 5 сек...")
             time.sleep(5)
 
+def start_vk_bot_thread():
+    """Запускает VK Bot polling в отдельном фоновом потоке."""
+    import threading
+    t = threading.Thread(target=run_vk_bot_polling, daemon=True, name="VKBotThread")
+    t.start()
+    print("[VK Bot] Фоновый поток запущен.")
+    return t
+
 if __name__ == "__main__":
     run_vk_bot_polling()

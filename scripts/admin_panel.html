@@ -359,6 +359,43 @@
           <button type="submit" class="btn-primary" style="height:36px; padding:0 18px;">Привязать VK ID</button>
         </form>
       </div>
+
+      <!-- MAX Bot: Bind MAX ID manually -->
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>💬 Привязка MAX ID к Пользователю</h2>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+            MAX user_id — это числовой ID пользователя в мессенджере MAX.
+            Чтобы узнать свой ID — напиши боту <strong>@se14050529_bot</strong> команду <code>/status</code>, он выведет твой MAX ID.
+          </p>
+        </div>
+        <form id="bindMaxForm" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="flex:1; min-width:180px;">
+            <label>Логин пользователя:</label>
+            <input type="text" id="maxBindUsername" class="form-control" placeholder="maxim / ardont" required>
+          </div>
+          <div class="form-group" style="flex:1; min-width:180px;">
+            <label>MAX user_id (число):</label>
+            <input type="text" id="maxBindUserId" class="form-control" placeholder="например: 418671076" required>
+          </div>
+          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px; background:linear-gradient(135deg,#ff6b35,#f7931e);">&#128172; Привязать MAX ID</button>
+        </form>
+      </div>
+
+      <!-- MAX Bot: Token Config -->
+      <div class="glass-card">
+        <div class="card-title">
+          <h2>⚙️ Настройка MAX Bot</h2>
+        </div>
+        <div id="maxConfigStatus" style="font-size:13px; margin-bottom:12px; color:var(--text-muted);">...</div>
+        <form id="maxConfigForm" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="flex:1; min-width:280px;">
+            <label>MAX Bot Token (<a href="https://max.ru" target="_blank" style="color:#ff6b35;">@MaxBotHub</a> → MAX_BOT_TOKEN):</label>
+            <input type="text" id="maxBotToken" class="form-control" placeholder="вставьте токен...">
+          </div>
+          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px;">&#128190; Сохранить токен</button>
+        </form>
+      </div>
     </div>
 
   </main>
@@ -408,6 +445,7 @@
             <td>
               <strong>${u.display_name || u.username}</strong>
               <div style="font-size:11px; color:var(--text-muted);">@${u.username} • VK: ${u.vk_user_id || 'не привязан'}</div>
+              <div style="font-size:11px; color:var(--text-muted);">MAX: ${u.max_user_id || 'не привязан'}</div>
             </td>
             <td><span style="font-size:11px; font-weight:700; color:${u.role === 'admin' ? '#c084fc' : '#93c5fd'}; text-transform:uppercase;">${u.role}</span></td>
             <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_chat" ${perms.can_chat ? 'checked' : ''}><span class="slider"></span></label></td>
@@ -418,6 +456,8 @@
             <td>
               <button class="btn-action btn-vk-edit" data-user="${u.username}" data-vk="${u.vk_user_id || ''}" title="Изменить VK ID">✏️ VK ID</button>
               ${u.vk_user_id ? `<button class="btn-action delete btn-vk-del" data-user="${u.username}" title="Отвязать VK">✕ VK</button>` : ''}
+              <button class="btn-action btn-max-edit" data-user="${u.username}" data-maxid="${u.max_user_id || ''}" title="Изменить MAX ID" style="background:linear-gradient(135deg,#ff6b35,#f7c59f);">✏️ MAX ID</button>
+              ${u.max_user_id ? `<button class="btn-action delete btn-max-del" data-user="${u.username}" title="Отвязать MAX" style="background:#c0392b;">✕ MAX</button>` : ''}
               <button class="btn-action btn-pwd" data-user="${u.username}">🔑 Пароль</button>
               ${!isMe ? `<button class="btn-action delete btn-del" data-user="${u.username}">🗑️</button>` : ''}
             </td>
@@ -660,9 +700,93 @@
       });
     }
 
+    // MAX Bot: Load config
+    async function loadMaxConfig() {
+      try {
+        const res = await fetch('/api/admin/max/config', { headers: authHeaders });
+        const d = await res.json();
+        const el = document.getElementById('maxConfigStatus');
+        if (el) {
+          if (d.is_configured) {
+            el.innerHTML = `<span style="color:var(--accent-emerald);">✅ MAX Bot активен: токен <code>${d.max_bot_token_masked}</code> • Бот: <strong>@se14050529_bot</strong></span>`;
+          } else {
+            el.innerHTML = `<span style="color:var(--accent-rose);">⚠️ Токен MAX Bot не задан. Введите токен ниже.</span>`;
+          }
+        }
+        const inp = document.getElementById('maxBotToken');
+        if (inp && d.max_bot_token) inp.placeholder = d.max_bot_token_masked;
+      } catch(e) {}
+    }
+
+    // MAX Bot: Save token form
+    const maxConfigForm = document.getElementById('maxConfigForm');
+    if (maxConfigForm) {
+      maxConfigForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = document.getElementById('maxBotToken').value.trim();
+        if (!token) { showToast('Введите токен!', true); return; }
+        const res = await fetch('/api/admin/max/config', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ max_bot_token: token })
+        });
+        const d = await res.json();
+        showToast(d.message, d.status !== 'ok');
+        document.getElementById('maxBotToken').value = '';
+        loadMaxConfig();
+      });
+    }
+
+    // MAX Bot: Bind MAX ID form
+    const bindMaxForm = document.getElementById('bindMaxForm');
+    if (bindMaxForm) {
+      bindMaxForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('maxBindUsername').value.trim();
+        const maxId = document.getElementById('maxBindUserId').value.trim();
+        const res = await fetch('/api/admin/max/bind', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ username, max_id: maxId })
+        });
+        const d = await res.json();
+        showToast(d.message, d.status !== 'ok');
+        if (d.status === 'ok') {
+          document.getElementById('maxBindUsername').value = '';
+          document.getElementById('maxBindUserId').value = '';
+          loadUsers();
+        }
+      });
+    }
+
+    // MAX Bot: Edit/Delete MAX ID buttons (delegated)
+    document.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('btn-max-edit')) {
+        const username = e.target.dataset.user;
+        const curId = e.target.dataset.maxid || '';
+        const newId = prompt(`MAX ID для @${username}:`, curId);
+        if (newId === null) return;
+        const res = await fetch('/api/admin/users/update_max', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ username, max_id: newId })
+        });
+        const d = await res.json();
+        showToast(d.message, d.status !== 'ok');
+        loadUsers();
+      }
+      if (e.target.classList.contains('btn-max-del')) {
+        const username = e.target.dataset.user;
+        if (confirm(`Отвязать MAX ID от @${username}?`)) {
+          const res = await fetch(`/api/admin/max/unbind/${username}`, { method: 'DELETE', headers: authHeaders });
+          const d = await res.json();
+          showToast(d.message, d.status !== 'ok');
+          loadUsers();
+        }
+      }
+    });
+
     // Init
     loadUsers();
     loadGlobalVkConfig();
+    loadMaxConfig();
     loadTokens();
     loadInvites();
   </script>
