@@ -1,13 +1,7 @@
-
-
-
-
-
-
 # -*- coding: utf-8 -*-
 """
 HomeServer MAX Messenger Bot Integration
-Connects to official MAX Bot API (platform-api2.max.ru / max-botapi-python).
+Connects to official MAX Bot API.
 """
 import os
 import sys
@@ -23,11 +17,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Optional, List, Any
 
-# ===== НАСТРОЙКА КОДИРОВКИ =====
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# ===== ПУТИ =====
 BASE_DIR = Path("C:/HomeServer")
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 INBOX_DIR = BASE_DIR / "inbox"
@@ -37,12 +29,21 @@ MEMORY_DIR.mkdir(exist_ok=True)
 
 sys.path.append(str(SCRIPTS_DIR))
 
-# ===== ИМПОРТЫ МОДУЛЕЙ HOMESERVER =====
+# Импорты
 try:
     from core.chat_agent import ask_chat_agent
     from core.audio_transcriber import transcribe_audio_file
     from core.study_planner import load_daily_plan
     from core.system_status import get_status_text
+    from core.auth_manager import get_user_by_max_id
+    from dotenv import load_dotenv
+    import base64
+    try:
+        from google import genai
+        GEMINI_AVAILABLE = True
+    except ImportError:
+        GEMINI_AVAILABLE = False
+        print("[MAX Bot] WARNING: google-generativeai not installed")
 except ImportError as e:
     print(f"[MAX Bot] WARNING: core modules not loaded: {e}")
     def ask_chat_agent(text, user_name=None):
@@ -51,20 +52,19 @@ except ImportError as e:
         return {"topic": "Preparation for SHAD", "tasks": []}
     def get_status_text():
         return "CPU: 10%, RAM: 50%"
+    def get_user_by_max_id(max_id):
+        return None
+    GEMINI_AVAILABLE = False
 
-# ===== SSL CONFIG =====
 SSL_CTX = ssl._create_unverified_context()
 MAX_API_BASE = "https://botapi.max.ru"
 
-# ===== CONTEXT MANAGER =====
 class ContextManager:
     """Manages dialog context for each user"""
-    
     def __init__(self, memory_dir: Path):
         self.memory_dir = memory_dir
         self.contexts: Dict[str, Dict] = {}
         self.max_history = 20
-    
     def get_context(self, user_id: str) -> Dict:
         if user_id not in self.contexts:
             self.contexts[user_id] = {
@@ -77,7 +77,6 @@ class ContextManager:
             }
             self._load_context(user_id)
         return self.contexts[user_id]
-    
     def add_message(self, user_id: str, message: str, is_user: bool = True):
         ctx = self.get_context(user_id)
         ctx["history"].append({
@@ -89,21 +88,17 @@ class ContextManager:
         if len(ctx["history"]) > self.max_history:
             ctx["history"] = ctx["history"][-self.max_history:]
         self._save_context(user_id)
-    
     def set_pending_file(self, user_id: str, file_info: Dict):
         ctx = self.get_context(user_id)
         ctx["pending_file"] = file_info
-    
     def get_pending_file(self, user_id: str) -> Optional[Dict]:
         ctx = self.get_context(user_id)
         file_info = ctx.get("pending_file")
         ctx["pending_file"] = None
         return file_info
-    
     def set_topic(self, user_id: str, topic: str):
         ctx = self.get_context(user_id)
         ctx["current_topic"] = topic
-    
     def get_context_summary(self, user_id: str) -> str:
         ctx = self.get_context(user_id)
         if not ctx["history"]:
@@ -116,7 +111,6 @@ class ContextManager:
         if ctx["current_topic"]:
             summary += f"\nCurrent topic: {ctx['current_topic']}"
         return summary
-    
     def _save_context(self, user_id: str):
         try:
             file_path = self.memory_dir / f"context_{user_id}.json"
@@ -124,7 +118,6 @@ class ContextManager:
                 json.dump(self.contexts[user_id], f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"[MAX Bot] Failed to save context: {e}")
-    
     def _load_context(self, user_id: str):
         try:
             file_path = self.memory_dir / f"context_{user_id}.json"
@@ -135,7 +128,6 @@ class ContextManager:
         except Exception as e:
             print(f"[MAX Bot] Failed to load context: {e}")
 
-# ===== MAX API FUNCTIONS =====
 def get_max_config() -> str:
     token = os.getenv("MAX_BOT_TOKEN", "")
     if CONFIG_PATH.exists():
@@ -193,7 +185,85 @@ def send_typing_status(user_id: str, token: str):
     except Exception:
         pass
 
-# ===== MESSAGE PROCESSING =====
+def download_file_from_max_direct(file_url: str, file_token: str, filename: str) -> Optional[Path]:
+    try:
+        safe_name = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+        if not safe_name:
+            safe_name = f"max_file_{int(time.time())}.bin"
+        local_path = INBOX_DIR / safe_name
+        if local_path.exists():
+            stem = local_path.stem
+            suffix = local_path.suffix
+            local_path = INBOX_DIR / f"{stem}_{int(time.time())}{suffix}"
+        req = urllib.request.Request(file_url, headers={
+            "Authorization": file_token,
+            "User-Agent": "HomeServer-MAX-Bot/2.0"
+        })
+        opener = get_max_opener()
+        with opener.open(req, timeout=60) as response:
+            with open(local_path, "wb") as f:
+                f.write(response.read())
+        print(f"[MAX Bot] File downloaded: {local_path.name} ({local_path.stat().st_size} bytes)")
+        return local_path
+    except Exception as e:
+        print(f"[MAX Bot] Direct download error: {e}")
+        return None
+
+def detect_file_type(file_path: Path) -> str:
+    ext = file_path.suffix.lower()
+    if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+        return 'image'
+    elif ext in ['.mp3', '.wav', '.ogg', '.m4a', '.aac']:
+        return 'audio'
+    elif ext in ['.pdf']:
+        return 'pdf'
+    elif ext in ['.txt', '.md', '.py', '.js', '.html', '.css', '.json', '.csv', '.xml', '.log']:
+        return 'text'
+    elif ext in ['.zip', '.rar', '.7z', '.gz', '.tar']:
+        return 'archive'
+    else:
+        return 'unknown'
+
+def analyze_image_with_gemini(image_path: Path, question: str = "Что изображено на этом изображении? Опиши подробно.") -> str:
+    """Анализирует изображение через Gemini Vision API."""
+    if not GEMINI_AVAILABLE:
+        return "⚠️ Gemini Vision не доступен. Установите google-generativeai: pip install google-generativeai"
+    try:
+        # Загружаем изображение в base64
+        with open(image_path, "rb") as f:
+            image_data = base64.b64encode(f.read()).decode("utf-8")
+        ext = image_path.suffix.lower()
+        mime_type = "image/jpeg" if ext in ['.jpg', '.jpeg'] else "image/png" if ext == '.png' else "image/webp" if ext == '.webp' else "image/gif" if ext == '.gif' else "image/jpeg"
+        
+        # Загружаем ключи
+        load_dotenv(CONFIG_PATH, override=True)
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_BACKUP_KEY")
+        if not api_key:
+            return "⚠️ Не найден API ключ Gemini в .env"
+        
+        client = genai.Client(api_key=api_key)
+        # Пробуем модели с поддержкой изображений
+        for model_name in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[
+                        {"role": "user", "parts": [
+                            {"text": question},
+                            {"inline_data": {"mime_type": mime_type, "data": image_data}}
+                        ]}
+                    ]
+                )
+                if response.text:
+                    print(f"[MAX Bot] Gemini analysis success with model {model_name}")
+                    return response.text
+            except Exception as e:
+                print(f"[MAX Bot] Gemini model {model_name} failed: {e}")
+                continue
+        return "⚠️ Не удалось проанализировать изображение ни через одну модель."
+    except Exception as e:
+        return f"⚠️ Ошибка анализа изображения: {e}"
+
 def sanitize_outgoing_text(text: str) -> str:
     if not text:
         return ""
@@ -205,12 +275,36 @@ def sanitize_outgoing_text(text: str) -> str:
     return t
 
 def process_message(text: str, user_id: str, user_name: str, 
-                   context_mgr: ContextManager, token: str) -> str:
+                   context_mgr: ContextManager, token: str, 
+                   attached_file_info: Optional[str] = None,
+                   attached_file_path: Optional[Path] = None) -> str:
     context_mgr.add_message(user_id, text)
     pending_file = context_mgr.get_pending_file(user_id)
     text_lower = text.lower().strip()
     
-    # ----- COMMANDS -----
+    full_message = text
+    if attached_file_info:
+        full_message += f"\n\n[ПРИКРЕПЛЕННЫЙ ФАЙЛ]:\n{attached_file_info}"
+    
+    # ---- ОБРАБОТКА ИЗОБРАЖЕНИЙ (приоритет) ----
+    if attached_file_path and attached_file_path.exists():
+        file_type = detect_file_type(attached_file_path)
+        if file_type == 'image':
+            # Проверяем, есть ли в тексте просьба описать
+            if text and any(word in text_lower for word in ["что", "скажи", "описать", "расскажи", "покажи"]):
+                print(f"[MAX Bot] Analyzing image: {attached_file_path.name}")
+                analysis = analyze_image_with_gemini(attached_file_path, text)
+                if analysis and not analysis.startswith("⚠️"):
+                    return f"🖼️ Анализ изображения:\n{analysis}"
+                else:
+                    # Если анализ не удался, отправляем сообщение об ошибке и переходим к обычному AI
+                    print(f"[MAX Bot] Image analysis failed: {analysis}")
+                    # Не возвращаем ошибку, а передаём вопрос в AI (как fallback)
+                    full_message = f"Пользователь прислал изображение '{attached_file_path.name}' и спросил: {text}. Попробуй ответить на вопрос, используя контекст."
+            else:
+                return f"📎 Файл '{attached_file_path.name}' сохранён в INBOX. Спросите, что на нём написано, или дайте команду для обработки."
+    
+    # ---- ОБРАБОТКА КОМАНД ----
     if text_lower in ["/start", "/help", "help", "помощь"]:
         response = (
             "HomeServer AI Hub active in MAX messenger!\n\n"
@@ -223,15 +317,12 @@ def process_message(text: str, user_id: str, user_name: str,
         )
         context_mgr.set_topic(user_id, "main_menu")
         return response
-    
     elif text_lower in ["/status", "status", "статус"]:
         status = get_status_text()
         return f"HomeServer status:\n{status}\n\nYour MAX ID: {user_id}"
-    
     elif text_lower in ["/plan", "plan", "план"]:
         plan = load_daily_plan()
         return f"Today's plan:\n\nTopic: {plan.get('topic', 'Study')}\nTasks: {', '.join(plan.get('tasks', ['No tasks']))}"
-    
     elif text_lower in ["/clear", "clear", "очистить"]:
         context_mgr.contexts[user_id] = {
             "history": [],
@@ -242,46 +333,15 @@ def process_message(text: str, user_id: str, user_name: str,
             "last_interaction": datetime.now().isoformat()
         }
         return "Dialog history cleared."
-    
     elif text_lower in ["/context", "context", "контекст"]:
         summary = context_mgr.get_context_summary(user_id)
         if not summary:
             return "Dialog history is empty."
         return f"Dialog context:\n{summary}"
     
-    # ----- FILE HANDLING -----
-    if pending_file:
-        file_path = Path(pending_file["path"])
-        file_name = pending_file["name"]
-        file_type = pending_file["type"]
-        response = f"Processing file: {file_name}\n"
-        if file_type == 'image':
-            response += "Image saved to INBOX. I can recognize text from it if needed."
-        elif file_type == 'audio':
-            try:
-                from core.audio_transcriber import transcribe_audio_file
-                transcript = transcribe_audio_file(str(file_path))
-                if transcript:
-                    response += f"Audio transcription:\n{transcript[:500]}"
-                else:
-                    response += "Could not transcribe audio."
-            except Exception as e:
-                response += f"Transcription error: {e}"
-        elif file_type == 'text':
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read(2000)
-                response += f"File content:\n{content}"
-            except Exception:
-                response += "Could not read file."
-        else:
-            response += f"File saved to INBOX. Type: {file_type}"
-        context_mgr.add_message(user_id, response, is_user=False)
-        return response
-    
-    # ----- AI QUERY -----
+    # ----- AI QUERY (с учётом контекста и возможного файла) -----
     context_summary = context_mgr.get_context_summary(user_id)
-    full_query = f"{context_summary}\n\nNew question: {text}" if context_summary else text
+    full_query = f"{context_summary}\n\nNew question: {full_message}" if context_summary else full_message
     
     try:
         resp = ask_chat_agent(full_query, user_name=user_name)
@@ -293,7 +353,6 @@ def process_message(text: str, user_id: str, user_name: str,
     context_mgr.add_message(user_id, response, is_user=False)
     return response
 
-# ===== POLLING LOOP =====
 def run_max_bot_polling():
     token = get_max_config()
     if not token:
@@ -343,6 +402,7 @@ def run_max_bot_polling():
             last_marker = res.get("marker", last_marker)
             
             events = res.get("updates", [])
+            
             for ev in events:
                 update_type = ev.get("update_type")
                 
@@ -351,26 +411,80 @@ def run_max_bot_polling():
                     sender = msg.get("sender", {})
                     sender_user_id = str(sender.get("user_id"))
                     text = msg.get("body", {}).get("text", "").strip()
-                    sender_name = sender.get("name") or sender.get("first_name") or "User"
                     
                     if not sender_user_id:
                         continue
                     
+                    real_user = get_user_by_max_id(sender_user_id)
+                    if real_user:
+                        effective_username = real_user.get("username")
+                        sender_name = real_user.get("display_name") or effective_username
+                    else:
+                        effective_username = sender.get("name") or sender.get("first_name") or "User"
+                        sender_name = effective_username
+                    
                     print(f"[MAX Bot] Message from {sender_name} (id:{sender_user_id}): {text[:60]}")
+                    
+                    # ---- ОБРАБОТКА ВЛОЖЕНИЙ ----
+                    attachments = msg.get("body", {}).get("attachments", [])
+                    attached_file_info = None
+                    attached_file_path = None
+                    
+                    if attachments:
+                        for att in attachments:
+                            att_type = att.get("type")
+                            if att_type == "file":
+                                payload = att.get("payload", {})
+                                file_url = payload.get("url")
+                                file_token = payload.get("token")
+                                file_id = payload.get("fileId")
+                                file_name = att.get("filename", "unknown")
+                                if file_url and file_token:
+                                    local_path = download_file_from_max_direct(file_url, file_token, file_name)
+                                    if local_path:
+                                        file_type = detect_file_type(local_path)
+                                        attached_file_path = local_path
+                                        attached_file_info = f"File: {file_name} (saved to {local_path})"
+                                        context_mgr.set_pending_file(sender_user_id, {
+                                            "path": str(local_path),
+                                            "name": file_name,
+                                            "type": file_type,
+                                            "uploaded_at": datetime.now().isoformat()
+                                        })
+                                        # Отправляем уведомление о загрузке
+                                        send_max_message(
+                                            sender_user_id,
+                                            f"📎 Файл '{file_name}' получен и сохранён в INBOX. Что с ним сделать?",
+                                            token
+                                        )
+                                        break  # берём первый файл
+                    
                     send_typing_status(sender_user_id, token)
-                    response = process_message(text, sender_user_id, sender_name, context_mgr, token)
+                    response = process_message(
+                        text, sender_user_id, sender_name,
+                        context_mgr, token,
+                        attached_file_info=attached_file_info,
+                        attached_file_path=attached_file_path
+                    )
                     if response:
                         send_max_message(sender_user_id, response, token)
                 
                 elif update_type == "file_uploaded":
+                    # Обработка отдельного события файла (оставляем как fallback)
                     file_data = ev.get("file", {})
                     sender = ev.get("sender", {})
                     sender_user_id = str(sender.get("user_id"))
                     if not sender_user_id:
                         continue
-                    print(f"[MAX Bot] File from {sender_user_id}: {file_data.get('file_name', 'unknown')}")
-                    context_mgr.set_pending_file(sender_user_id, file_data)
-                    send_max_message(sender_user_id, "File received. What should I do with it?", token)
+                    file_id = file_data.get("id")
+                    file_name = file_data.get("name") or "unknown"
+                    print(f"[MAX Bot] File upload event from {sender_user_id}: {file_name}")
+                    if file_id:
+                        send_max_message(
+                            sender_user_id,
+                            f"📎 Файл '{file_name}' получен (обработка через основное сообщение)",
+                            token
+                        )
         
         except KeyboardInterrupt:
             print("[MAX Bot] Stopped by user request")

@@ -3,23 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HomeServer AI Hub — Центр Управления и Безопасности</title>
-  
-  <!-- Fonts -->
+  <title>HomeServer AI Hub — Админ-панель</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg-primary: #0a0e17;
       --bg-secondary: #111827;
       --bg-card: rgba(17, 24, 39, 0.85);
-      --border-color: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.08);
       --accent-indigo: #6366f1;
       --accent-cyan: #06b6d4;
       --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
       --accent-rose: #f43f5e;
       --accent-purple: #a855f7;
       --text-main: #f3f4f6;
@@ -27,164 +24,312 @@
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-full: 9999px;
-      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at 50% 0%, #171c35 0%, var(--bg-primary) 70%);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-container, .app-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .login-box {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 40px;
+      max-width: 420px;
+      margin: 0 auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .login-box h1 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #fff, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .form-control {
+      width: 100%;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--accent-indigo); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .error-msg {
+      color: var(--accent-rose);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
     }
 
+    .app-container { display: none; }
+    .app-container.active { display: block; }
+
     header.admin-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      background: rgba(10, 14, 23, 0.85);
-      border-bottom: 1px solid var(--border-color);
-      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 14px 24px;
+      background: rgba(10,14,23,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
     }
-
-    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .brand-logo {
-      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
       background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
-      display: flex; align-items: center; justify-content: center; font-size: 20px;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 16px rgba(99,102,241,0.4);
     }
     .brand-title h1 {
-      font-size: 16px; font-weight: 700;
-      background: linear-gradient(90deg, #fff, #c084fc);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
     }
     .brand-title p { font-size: 11.5px; color: var(--text-muted); }
-
-    .header-actions { display: flex; align-items: center; gap: 12px; }
-    .btn-nav {
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
-      color: var(--text-main); padding: 8px 14px; border-radius: var(--radius-sm);
-      font-size: 12.5px; font-weight: 500; text-decoration: none; cursor: pointer;
-      display: flex; align-items: center; gap: 6px; transition: var(--transition-fast);
-    }
-    .btn-nav:hover { background: rgba(255, 255, 255, 0.1); }
-
     .admin-badge {
-      background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4);
-      color: #c084fc; padding: 5px 12px; border-radius: var(--radius-full);
-      font-size: 12px; font-weight: 600;
+      background: rgba(168,85,247,0.15);
+      border: 1px solid rgba(168,85,247,0.4);
+      color: #c084fc;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
     }
+    .btn-nav {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.1); }
 
-    /* Tabs Navigation */
     .admin-tabs {
-      display: flex; gap: 8px; max-width: 1100px; width: 100%;
-      margin: 18px auto 0; padding: 0 16px;
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
     }
     .tab-btn {
-      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
-      color: var(--text-muted); padding: 10px 18px; border-radius: var(--radius-sm);
-      font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
-      transition: var(--transition-fast);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      border-bottom: 2px solid transparent;
     }
+    .tab-btn:hover { color: #fff; }
     .tab-btn.active {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
-      border-color: var(--accent-indigo); color: #fff;
+      color: #fff;
+      border-bottom-color: var(--accent-indigo);
+      background: rgba(99,102,241,0.1);
     }
 
-    /* Container */
-    main.admin-container {
-      max-width: 1100px; width: 100%; margin: 16px auto 32px;
-      padding: 0 16px; display: flex; flex-direction: column; gap: 20px;
+    .admin-container {
+      padding: 20px 24px;
+      background: var(--bg-secondary);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
     }
-
-    .tab-content { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.2s ease; }
-    .tab-content.active { display: flex; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .glass-card {
-      background: var(--bg-card); backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px); border: 1px solid var(--border-color);
-      border-radius: var(--radius-md); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
     }
-
     .card-title {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
     }
-    .card-title h2 { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
-
-    /* Tables */
-    .table-responsive { overflow-x: auto; }
-    table.custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    .card-title h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.15); }
+    .btn-action.delete { color: var(--accent-rose); border-color: rgba(244,63,94,0.3); }
+    table.custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
     table.custom-table th {
-      background: rgba(255, 255, 255, 0.02); padding: 10px 14px;
-      font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.02);
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
     }
     table.custom-table td {
-      padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); vertical-align: middle;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
     }
-
-    /* Switch */
-    .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(255, 255, 255, 0.15); transition: .2s; border-radius: 20px;
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.15);
+      transition: .2s;
+      border-radius: 20px;
     }
     .slider:before {
-      position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
-      background-color: white; transition: .2s; border-radius: 50%;
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: .2s;
+      border-radius: 50%;
     }
-    input:checked + .slider { background-color: var(--accent-emerald); }
+    input:checked + .slider { background: var(--accent-emerald); }
     input:checked + .slider:before { transform: translateX(16px); }
-
-    .btn-action {
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
-      color: var(--text-main); padding: 6px 12px; border-radius: var(--radius-sm);
-      font-size: 11.5px; cursor: pointer; transition: var(--transition-fast);
-    }
-    .btn-action:hover { background: rgba(255, 255, 255, 0.15); }
-    .btn-action.delete { color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
-      border: none; color: #fff; padding: 10px 20px; border-radius: var(--radius-sm);
-      font-weight: 600; font-size: 13px; cursor: pointer; transition: var(--transition-fast);
-    }
-    .btn-primary:hover { opacity: 0.92; }
-
     .form-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
     }
-    .form-group label { display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control {
-      width: 100%; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm); color: #fff; padding: 8px 12px; font-size: 13px; outline: none;
+    .form-group-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
     }
-
     .toast {
-      position: fixed; bottom: 24px; right: 24px; background: #1e293b;
-      border: 1px solid var(--border-color); color: #fff; padding: 12px 20px;
-      border-radius: var(--radius-sm); font-size: 13px; display: none; z-index: 1000;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      display: none;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+<!-- ====== ФОРМА ВХОДА ====== -->
+<div id="loginContainer" class="login-container">
+  <div class="login-box">
+    <h1>👑 Админ-панель</h1>
+    <p>Войдите под учётной записью администратора</p>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Логин</label>
+        <input type="text" id="loginUsername" class="form-control" placeholder="ardont" value="ardont" required>
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="loginPassword" class="form-control" placeholder="•••••••" required>
+      </div>
+      <button type="submit" class="btn-primary">Войти</button>
+      <div id="loginError" class="error-msg">Неверный логин или пароль</div>
+    </form>
+  </div>
+</div>
+
+<!-- ====== ОСНОВНОЙ ИНТЕРФЕЙС ====== -->
+<div id="appContainer" class="app-container">
   <header class="admin-header">
     <div class="brand">
       <div class="brand-logo">👑</div>
@@ -193,51 +338,46 @@
         <p>HomeServer Multi-User, Token Quotas & VK Whitelist Hub</p>
       </div>
     </div>
-    <div class="header-actions">
-      <span class="admin-badge" id="adminUserBadge">👤 ardont (Главный Админ)</span>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span class="admin-badge" id="adminUserBadge">👤 admin</span>
       <a href="/" class="btn-nav">🏠 На Главную</a>
       <button class="btn-nav" id="btnLogout">🚪 Выйти</button>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
   <div class="admin-tabs">
-    <button class="tab-btn active" data-tab="tabUsers" id="btnTabUsers">👥 Пользователи & Доступ</button>
-    <button class="tab-btn" data-tab="tabTokens" id="btnTabTokens">📊 Расход Токенов & Квоты</button>
-    <button class="tab-btn" data-tab="tabVK" id="btnTabVK">📲 VK Whitelist & Инвайты</button>
+    <button class="tab-btn active" data-tab="tabUsers">👥 Пользователи & Доступ</button>
+    <button class="tab-btn" data-tab="tabTokens">📊 Расход Токенов & Квоты</button>
+    <button class="tab-btn" data-tab="tabVK">📲 VK Whitelist & Инвайты</button>
   </div>
 
-  <!-- Main Container -->
-  <main class="admin-container">
-
-    <!-- TAB 1: USERS & PERMISSIONS -->
+  <div class="admin-container">
+    <!-- TAB 1: USERS -->
     <div id="tabUsers" class="tab-content active">
       <div class="glass-card">
         <div class="card-title">
-          <h2>👥 Учетные Записи и Гранулярные Права (Feature Toggles)</h2>
+          <h2>👥 Учетные Записи и Гранулярные Права</h2>
           <button class="btn-action" id="btnRefreshUsers">🔄 Обновить</button>
         </div>
-
         <div class="table-responsive">
           <table class="custom-table" id="usersTable">
             <thead>
               <tr>
                 <th>Пользователь</th>
                 <th>Роль</th>
-                <th title="Доступ к AI-диалогам">💬 Чат</th>
-                <th title="Доступ к хранилищу и INBOX">📁 Хранилище</th>
-                <th title="Выполнение скриптов и терминала">⚡ Скрипты</th>
-                <th title="Установка навыков">🧩 Скиллы</th>
-                <th title="Права администратора">👑 Админ</th>
+                <th>💬 Чат</th>
+                <th>📁 Хранилище</th>
+                <th>⚡ Скрипты</th>
+                <th>🧩 Скиллы</th>
+                <th>👑 Админ</th>
                 <th>Действия</th>
               </tr>
             </thead>
-            <tbody id="usersTbody"></tbody>
+            <tbody id="usersTbody"><tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Загрузка...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Add User Card -->
       <div class="glass-card">
         <div class="card-title">
           <h2>➕ Зарегистрировать Нового Пользователя</h2>
@@ -246,11 +386,11 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Логин (username):</label>
-              <input type="text" id="newUsername" class="form-control" required placeholder="например: alex">
+              <input type="text" id="newUsername" class="form-control" required placeholder="alex">
             </div>
             <div class="form-group">
               <label>Пароль:</label>
-              <input type="password" id="newPassword" class="form-control" required placeholder="пароль...">
+              <input type="password" id="newPassword" class="form-control" required placeholder="пароль">
             </div>
             <div class="form-group">
               <label>Отображаемое имя:</label>
@@ -264,26 +404,18 @@
               </select>
             </div>
           </div>
-          <div style="display:flex; gap:16px; margin:12px 0;">
-            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" id="permChat" checked> 💬 Чат
-            </label>
-            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" id="permStorage"> 📁 Хранилище
-            </label>
-            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" id="permScripts"> ⚡ Скрипты
-            </label>
-            <label style="font-size:12.5px; display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" id="permSkills"> 🧩 Скиллы
-            </label>
+          <div class="form-group-inline" style="margin:12px 0;">
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="permChat" checked> 💬 Чат</label>
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="permStorage"> 📁 Хранилище</label>
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="permScripts"> ⚡ Скрипты</label>
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="permSkills"> 🧩 Скиллы</label>
           </div>
-          <button type="submit" class="btn-primary">➕ Создать Пользователя</button>
+          <button type="submit" class="btn-primary" style="width:auto;">➕ Создать Пользователя</button>
         </form>
       </div>
     </div>
 
-    <!-- TAB 2: TOKEN ACCOUNTING & QUOTAS -->
+    <!-- TAB 2: TOKENS -->
     <div id="tabTokens" class="tab-content">
       <div class="glass-card">
         <div class="card-title">
@@ -291,9 +423,8 @@
           <button class="btn-action" id="btnRefreshTokens">🔄 Обновить</button>
         </div>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
-          Контроль расхода токенов моделей Google Gemini & DeepSeek по каждому пользователю с возможностью назначения жестких квот.
+          Контроль расхода токенов Google Gemini & DeepSeek по каждому пользователю.
         </p>
-
         <div class="table-responsive">
           <table class="custom-table" id="tokensTable">
             <thead>
@@ -301,30 +432,27 @@
                 <th>Пользователь</th>
                 <th>Всего Токенов</th>
                 <th>Запросов</th>
-                <th>Текущий Лимит (Квота)</th>
+                <th>Текущий Лимит</th>
                 <th>Модели</th>
                 <th>Действия</th>
               </tr>
             </thead>
-            <tbody id="tokensTbody"></tbody>
+            <tbody id="tokensTbody"><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Загрузка...</td></tr></tbody>
           </table>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:12px;">
+          <button class="btn-action" id="btnRemoveAllLimits" style="background:rgba(244,63,94,0.1); color:var(--accent-rose); border-color:rgba(244,63,94,0.3);">♾️ Снять все лимиты</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: VK WHITELIST & INVITES -->
+    <!-- TAB 3: VK & INVITES -->
     <div id="tabVK" class="tab-content">
       <div class="glass-card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <h2 style="font-size:15px; font-weight:600; color:#fff;">📲 Управление Доступом VK & Инвайт-коды</h2>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-              Бот в VK отвечает только пользователям с привязанным VK ID или тем, кто ввел инвайт-код.
-            </p>
-          </div>
-          <button class="btn-primary" id="btnGenInvite">➕ Создать Инвайт-код</button>
+        <div class="card-title">
+          <h2>📲 Управление Доступом VK & Инвайт-коды</h2>
+          <button class="btn-primary" id="btnGenInvite" style="width:auto; padding:6px 16px; font-size:13px;">➕ Создать Инвайт</button>
         </div>
-
         <div class="table-responsive">
           <table class="custom-table" id="invitesTable">
             <thead>
@@ -332,120 +460,159 @@
                 <th>Инвайт-код</th>
                 <th>Целевой аккаунт</th>
                 <th>Статус</th>
-                <th>Кем активирован (VK ID)</th>
+                <th>Кем активирован</th>
                 <th>Дата создания</th>
                 <th>Действия</th>
               </tr>
             </thead>
-            <tbody id="invitesTbody"></tbody>
+            <tbody id="invitesTbody"><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Загрузка...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Bind VK ID manually -->
+      <!-- Bind VK -->
       <div class="glass-card">
         <div class="card-title">
-          <h2>🔗 Прямая Привязка VK ID к Пользователю</h2>
+          <h2>🔗 Привязка VK ID к Пользователю</h2>
         </div>
-        <form id="bindVkForm" style="display:flex; gap:12px; align-items:flex-end;">
+        <form id="bindVkForm" class="form-group-inline">
           <div class="form-group" style="flex:1;">
-            <label>Логин пользователя в системе:</label>
-            <input type="text" id="bindUsername" class="form-control" placeholder="maxim / ardont" required>
+            <label>Логин пользователя</label>
+            <input type="text" id="bindUsername" class="form-control" placeholder="ardont" required>
           </div>
           <div class="form-group" style="flex:1;">
-            <label>VK ID пользователя (число):</label>
-            <input type="text" id="bindVkId" class="form-control" placeholder="например: 12345678" required>
+            <label>VK ID (число)</label>
+            <input type="text" id="bindVkId" class="form-control" placeholder="12345678" required>
           </div>
-          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px;">Привязать VK ID</button>
+          <button type="submit" class="btn-primary" style="width:auto; height:36px;">Привязать VK ID</button>
         </form>
       </div>
 
-      <!-- MAX Bot: Bind MAX ID manually -->
+      <!-- Bind MAX -->
       <div class="glass-card">
         <div class="card-title">
           <h2>💬 Привязка MAX ID к Пользователю</h2>
-          <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
-            MAX user_id — это числовой ID пользователя в мессенджере MAX.
-            Чтобы узнать свой ID — напиши боту <strong>@se14050529_bot</strong> команду <code>/status</code>, он выведет твой MAX ID.
-          </p>
+          <p style="font-size:12px; color:var(--text-muted);">MAX user_id — числовой ID в мессенджере MAX. Узнайте его командой <code>/status</code> у бота @se14050529_bot.</p>
         </div>
-        <form id="bindMaxForm" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-          <div class="form-group" style="flex:1; min-width:180px;">
-            <label>Логин пользователя:</label>
-            <input type="text" id="maxBindUsername" class="form-control" placeholder="maxim / ardont" required>
+        <form id="bindMaxForm" class="form-group-inline">
+          <div class="form-group" style="flex:1;">
+            <label>Логин пользователя</label>
+            <input type="text" id="maxBindUsername" class="form-control" placeholder="ardont" required>
           </div>
-          <div class="form-group" style="flex:1; min-width:180px;">
-            <label>MAX user_id (число):</label>
-            <input type="text" id="maxBindUserId" class="form-control" placeholder="например: 418671076" required>
+          <div class="form-group" style="flex:1;">
+            <label>MAX user_id (число)</label>
+            <input type="text" id="maxBindUserId" class="form-control" placeholder="418671076" required>
           </div>
-          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px; background:linear-gradient(135deg,#ff6b35,#f7931e);">&#128172; Привязать MAX ID</button>
+          <button type="submit" class="btn-primary" style="width:auto; height:36px; background:linear-gradient(135deg,#ff6b35,#f7931e);">Привязать MAX ID</button>
         </form>
       </div>
 
-      <!-- MAX Bot: Token Config -->
+      <!-- MAX Bot Token -->
       <div class="glass-card">
         <div class="card-title">
           <h2>⚙️ Настройка MAX Bot</h2>
         </div>
-        <div id="maxConfigStatus" style="font-size:13px; margin-bottom:12px; color:var(--text-muted);">...</div>
-        <form id="maxConfigForm" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-          <div class="form-group" style="flex:1; min-width:280px;">
-            <label>MAX Bot Token (<a href="https://max.ru" target="_blank" style="color:#ff6b35;">@MaxBotHub</a> → MAX_BOT_TOKEN):</label>
-            <input type="text" id="maxBotToken" class="form-control" placeholder="вставьте токен...">
+        <div id="maxConfigStatus" style="font-size:13px; margin-bottom:12px; color:var(--text-muted);">Загрузка...</div>
+        <form id="maxConfigForm" class="form-group-inline">
+          <div class="form-group" style="flex:2;">
+            <label>MAX Bot Token</label>
+            <input type="text" id="maxBotToken" class="form-control" placeholder="вставьте токен..." style="width:100%;">
           </div>
-          <button type="submit" class="btn-primary" style="height:36px; padding:0 18px;">&#128190; Сохранить токен</button>
+          <button type="submit" class="btn-primary" style="width:auto; height:36px;">💾 Сохранить токен</button>
         </form>
       </div>
     </div>
+  </div>
+</div>
 
-  </main>
+<div id="toast" class="toast"></div>
 
-  <div id="toast" class="toast"></div>
+<script>
+  // ======================== HELPERS ========================
+  function showToast(text, isError = false) {
+    const t = document.getElementById('toast');
+    t.innerText = text;
+    t.style.borderColor = isError ? 'var(--accent-rose)' : 'var(--accent-emerald)';
+    t.style.display = 'block';
+    clearTimeout(t._hide);
+    t._hide = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
 
-  <script>
-    const token = localStorage.getItem('homeserver_token') || 'local_admin_token';
-    const authHeaders = {
+  function getToken() { return localStorage.getItem('homeserver_token') || ''; }
+  function setToken(token) { localStorage.setItem('homeserver_token', token); }
+  function clearToken() { localStorage.removeItem('homeserver_token'); }
+
+  function authHeaders() {
+    const token = getToken();
+    return {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token
+      ...(token ? { 'Authorization': 'Bearer ' + token } : {})
     };
+  }
 
-    function showToast(text, isError = false) {
-      const t = document.getElementById('toast');
-      t.innerText = text;
-      t.style.borderColor = isError ? 'var(--accent-rose)' : 'var(--accent-emerald)';
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 3500);
-    }
-
-    // Tabs switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        const target = document.getElementById(btn.getAttribute('data-tab'));
-        if (target) target.classList.add('active');
+  // ======================== LOGIN / LOGOUT ========================
+  async function login(username, password) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
       });
-    });
+      const data = await res.json();
+      if (data.status === 'ok' && data.token) {
+        setToken(data.token);
+        const user = data.user || {};
+        if (!user.permissions?.is_admin) {
+          clearToken();
+          document.getElementById('loginError').style.display = 'block';
+          document.getElementById('loginError').innerText = 'У вас нет прав администратора.';
+          return false;
+        }
+        document.getElementById('loginError').style.display = 'none';
+        showToast('✅ Вход выполнен успешно!');
+        return true;
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('loginError').innerText = data.message || 'Неверный логин или пароль';
+        return false;
+      }
+    } catch (e) {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginError').innerText = 'Ошибка соединения с сервером.';
+      return false;
+    }
+  }
 
-    // 1. Load Users
-    async function loadUsers() {
-      const tbody = document.getElementById('usersTbody');
-      try {
-        const res = await fetch('/api/admin/users', { headers: authHeaders });
-        const data = await res.json();
-        const users = data.users || [];
-        tbody.innerHTML = '';
+  function logout() {
+    clearToken();
+    document.getElementById('appContainer').classList.remove('active');
+    document.getElementById('loginContainer').style.display = 'block';
+    showToast('Вы вышли из системы');
+  }
 
-        users.forEach(u => {
-          const perms = u.permissions || {};
-          const isMe = u.username === 'ardont';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
+  // ======================== ЗАГРУЗКА ДАННЫХ ========================
+
+  // 1. Users
+  async function loadUsers() {
+    const tbody = document.getElementById('usersTbody');
+    try {
+      const res = await fetch('/api/admin/users', { headers: authHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const users = data.users || [];
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Нет пользователей</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map(u => {
+        const perms = u.permissions || {};
+        const isMe = u.username === 'ardont';
+        return `
+          <tr>
             <td>
               <strong>${u.display_name || u.username}</strong>
-              <div style="font-size:11px; color:var(--text-muted);">@${u.username} • VK: ${u.vk_user_id || 'не привязан'}</div>
-              <div style="font-size:11px; color:var(--text-muted);">MAX: ${u.max_user_id || 'не привязан'}</div>
+              <div style="font-size:11px; color:var(--text-muted);">@${u.username} • VK: ${u.vk_user_id || '—'}</div>
+              <div style="font-size:11px; color:var(--text-muted);">MAX: ${u.max_user_id || '—'}</div>
             </td>
             <td><span style="font-size:11px; font-weight:700; color:${u.role === 'admin' ? '#c084fc' : '#93c5fd'}; text-transform:uppercase;">${u.role}</span></td>
             <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_chat" ${perms.can_chat ? 'checked' : ''}><span class="slider"></span></label></td>
@@ -454,341 +621,500 @@
             <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="can_manage_skills" ${perms.can_manage_skills ? 'checked' : ''}><span class="slider"></span></label></td>
             <td><label class="switch"><input type="checkbox" class="perm-toggle" data-user="${u.username}" data-perm="is_admin" ${perms.is_admin ? 'checked' : ''} ${isMe ? 'disabled' : ''}><span class="slider"></span></label></td>
             <td>
-              <button class="btn-action btn-vk-edit" data-user="${u.username}" data-vk="${u.vk_user_id || ''}" title="Изменить VK ID">✏️ VK ID</button>
-              ${u.vk_user_id ? `<button class="btn-action delete btn-vk-del" data-user="${u.username}" title="Отвязать VK">✕ VK</button>` : ''}
-              <button class="btn-action btn-max-edit" data-user="${u.username}" data-maxid="${u.max_user_id || ''}" title="Изменить MAX ID" style="background:linear-gradient(135deg,#ff6b35,#f7c59f);">✏️ MAX ID</button>
-              ${u.max_user_id ? `<button class="btn-action delete btn-max-del" data-user="${u.username}" title="Отвязать MAX" style="background:#c0392b;">✕ MAX</button>` : ''}
               <button class="btn-action btn-pwd" data-user="${u.username}">🔑 Пароль</button>
+              <button class="btn-action btn-vk-edit" data-user="${u.username}" data-vk="${u.vk_user_id || ''}">✏️ VK</button>
+              ${u.vk_user_id ? `<button class="btn-action delete btn-vk-del" data-user="${u.username}">✕ VK</button>` : ''}
+              <button class="btn-action btn-max-edit" data-user="${u.username}" data-maxid="${u.max_user_id || ''}">✏️ MAX</button>
+              ${u.max_user_id ? `<button class="btn-action delete btn-max-del" data-user="${u.username}">✕ MAX</button>` : ''}
               ${!isMe ? `<button class="btn-action delete btn-del" data-user="${u.username}">🗑️</button>` : ''}
             </td>
-          `;
-          tbody.appendChild(tr);
-        });
+          </tr>
+        `;
+      }).join('');
 
-        // Event listeners for permissions
-        document.querySelectorAll('.perm-toggle').forEach(chk => {
-          chk.addEventListener('change', async (e) => {
-            const user = e.target.getAttribute('data-user');
-            const perm = e.target.getAttribute('data-perm');
-            await fetch('/api/admin/users/update_permissions', {
+      // Events for permissions
+      document.querySelectorAll('.perm-toggle').forEach(chk => {
+        chk.onchange = async function() {
+          const user = this.dataset.user;
+          const perm = this.dataset.perm;
+          await fetch('/api/admin/users/update_permissions', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ username: user, permissions: { [perm]: this.checked } })
+          });
+          showToast(`Права ${user} [${perm}] изменены`);
+        };
+      });
+
+      // Password change
+      document.querySelectorAll('.btn-pwd').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          const newP = prompt(`Новый пароль для ${user}:`);
+          if (newP && newP.length >= 3) {
+            await fetch('/api/admin/users/update_password', {
               method: 'POST',
-              headers: authHeaders,
-              body: JSON.stringify({ username: user, permissions: { [perm]: e.target.checked } })
+              headers: authHeaders(),
+              body: JSON.stringify({ username: user, password: newP })
             });
-            showToast(`Права ${user} [${perm}] изменены`);
-          });
-        });
+            showToast(`Пароль для ${user} обновлен!`);
+          }
+        };
+      });
 
-        document.querySelectorAll('.btn-pwd').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const user = btn.getAttribute('data-user');
-            const newP = prompt(`Новый пароль для ${user}:`);
-            if (newP && newP.length >= 3) {
-              await fetch('/api/admin/users/update_password', {
-                method: 'POST',
-                headers: authHeaders,
-                body: JSON.stringify({ username: user, password: newP })
-              });
-              showToast(`Пароль для ${user} обновлен!`);
-            }
-          });
-        });
+      // Delete user
+      document.querySelectorAll('.btn-del').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          if (confirm(`Удалить пользователя ${user}?`)) {
+            await fetch(`/api/admin/users/${user}`, { method: 'DELETE', headers: authHeaders() });
+            showToast(`Пользователь ${user} удален`);
+            loadUsers();
+          }
+        };
+      });
 
-        document.querySelectorAll('.btn-del').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const user = btn.getAttribute('data-user');
-            if (confirm(`Удалить пользователя ${user}?`)) {
-              await fetch(`/api/admin/users/${user}`, { method: 'DELETE', headers: authHeaders });
-              showToast(`Пользователь ${user} удален`);
-              loadUsers();
-            }
+      // Edit VK
+      document.querySelectorAll('.btn-vk-edit').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          const cur = this.dataset.vk || '';
+          const newId = prompt(`VK ID для @${user}:`, cur);
+          if (newId === null) return;
+          const res = await fetch('/api/admin/users/update_vk', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ username: user, vk_id: newId })
           });
-        });
+          const d = await res.json();
+          showToast(d.message, d.status !== 'ok');
+          loadUsers();
+        };
+      });
+      document.querySelectorAll('.btn-vk-del').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          if (confirm(`Отвязать VK ID от @${user}?`)) {
+            await fetch(`/api/admin/vk/unbind/${user}`, { method: 'DELETE', headers: authHeaders() });
+            showToast(`VK отвязан от @${user}`);
+            loadUsers();
+          }
+        };
+      });
 
-      } catch(e){}
+      // Edit MAX
+      document.querySelectorAll('.btn-max-edit').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          const cur = this.dataset.maxid || '';
+          const newId = prompt(`MAX ID для @${user}:`, cur);
+          if (newId === null) return;
+          const res = await fetch('/api/admin/users/update_max', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ username: user, max_id: newId })
+          });
+          const d = await res.json();
+          showToast(d.message, d.status !== 'ok');
+          loadUsers();
+        };
+      });
+      document.querySelectorAll('.btn-max-del').forEach(btn => {
+        btn.onclick = async function() {
+          const user = this.dataset.user;
+          if (confirm(`Отвязать MAX ID от @${user}?`)) {
+            await fetch(`/api/admin/max/unbind/${user}`, { method: 'DELETE', headers: authHeaders() });
+            showToast(`MAX отвязан от @${user}`);
+            loadUsers();
+          }
+        };
+      });
+
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--accent-rose);">Ошибка загрузки: ${e.message}</td></tr>`;
+      console.error('loadUsers error:', e);
     }
+  }
 
-    
-    // 2. Load Tokens, Quotas & Models Management
-    async function loadTokens() {
-      const tbody = document.getElementById('tokensTbody');
-      try {
-        const res = await fetch('/api/admin/tokens/stats', { headers: authHeaders });
-        const data = await res.json();
-        const users = data.users || {};
-        tbody.innerHTML = '';
-
-        Object.keys(users).forEach(uName => {
-          const u = users[uName];
-          const tr = document.createElement('tr');
-          const isUnlimited = u.token_quota === -1;
-          const quotaBadge = isUnlimited 
-            ? '<span style="background:rgba(16,185,129,0.15); color:var(--accent-emerald); padding:3px 8px; border-radius:6px; font-weight:800;">♾️ Безлимит</span>' 
-            : `<span>${u.total_tokens.toLocaleString()} / ${u.token_quota.toLocaleString()}</span>`;
-          
-          const modelsList = u.allowed_models || ['*'];
-          const modelsBadge = modelsList.includes('*')
-            ? '<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700;">🌟 Все модели (*)</span>'
-            : modelsList.map(m => `<span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:11px; margin-right:4px;">${m}</span>`).join('');
-
-          tr.innerHTML = `
+  // 2. Tokens
+  async function loadTokens() {
+    const tbody = document.getElementById('tokensTbody');
+    try {
+      const res = await fetch('/api/admin/tokens/stats', { headers: authHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const users = data.users || {};
+      const entries = Object.entries(users);
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Нет данных</td></tr>';
+        return;
+      }
+      tbody.innerHTML = entries.map(([uName, u]) => {
+        const isUnlimited = u.token_quota === -1;
+        const quotaBadge = isUnlimited
+          ? '<span style="background:rgba(16,185,129,0.15); color:var(--accent-emerald); padding:3px 8px; border-radius:6px; font-weight:800;">♾️ Безлимит</span>'
+          : `<span>${(u.total_tokens || 0).toLocaleString()} / ${(u.token_quota || 50000).toLocaleString()}</span>`;
+        const modelsList = u.allowed_models || ['*'];
+        const modelsBadge = modelsList.includes('*')
+          ? '<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700;">🌟 Все модели (*)</span>'
+          : modelsList.map(m => `<span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:11px; margin-right:4px;">${m}</span>`).join('');
+        return `
+          <tr>
             <td><strong>@${uName}</strong></td>
-            <td><span style="color:var(--accent-cyan); font-weight:700;">${u.total_tokens.toLocaleString()}</span></td>
-            <td>${u.requests_count}</td>
+            <td><span style="color:var(--accent-cyan); font-weight:700;">${(u.total_tokens || 0).toLocaleString()}</span></td>
+            <td>${u.requests_count || 0}</td>
             <td><strong>${quotaBadge}</strong></td>
             <td>
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 ${modelsBadge}
-                <button class="btn-action btn-edit-models" data-user="${uName}" data-models='${JSON.stringify(modelsList)}' style="font-size:11px; padding:2px 6px;">✏️ Изменить</button>
+                <button class="btn-action btn-edit-models" data-user="${uName}" data-models='${JSON.stringify(modelsList)}' style="font-size:11px; padding:2px 6px;">✏️</button>
               </div>
             </td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                ${!isUnlimited ? `<button class="btn-action btn-make-unlimited" data-user="${uName}" style="background:rgba(16,185,129,0.15); color:var(--accent-emerald);">♾️ Безлимит</button>` : ''}
-                <button class="btn-action btn-quota" data-user="${uName}" data-quota="${u.token_quota}">⚙️ Лимит</button>
-                <button class="btn-action btn-reset-tokens" data-user="${uName}" title="Сбросить счетчик">🔄 Сброс</button>
-                ${uName !== 'ardont' ? `<button class="btn-action delete btn-del-stats" data-user="${uName}" title="Удалить из статистики">🗑️</button>` : ''}
+                ${!isUnlimited ? `<button class="btn-action btn-make-unlimited" data-user="${uName}" style="background:rgba(16,185,129,0.15); color:var(--accent-emerald);">♾️</button>` : ''}
+                <button class="btn-action btn-quota" data-user="${uName}" data-quota="${u.token_quota}">⚙️</button>
+                <button class="btn-action btn-reset-tokens" data-user="${uName}">🔄</button>
+                ${uName !== 'ardont' ? `<button class="btn-action delete btn-del-stats" data-user="${uName}">🗑️</button>` : ''}
               </div>
             </td>
-          `;
-          tbody.appendChild(tr);
-        });
+          </tr>
+        `;
+      }).join('');
 
-        // Event listeners for tokens table
-        document.querySelectorAll('.btn-make-unlimited').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const uName = btn.getAttribute('data-user');
+      // Events
+      document.querySelectorAll('.btn-make-unlimited').forEach(btn => {
+        btn.onclick = async function() {
+          const uName = this.dataset.user;
+          await fetch('/api/admin/tokens/set_quota', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ username: uName, quota: -1, allowed_models: ["*"] })
+          });
+          showToast(`Для @${uName} включен полный БЕЗЛИМИТ!`);
+          loadTokens();
+        };
+      });
+      document.querySelectorAll('.btn-quota').forEach(btn => {
+        btn.onclick = async function() {
+          const uName = this.dataset.user;
+          const curQ = this.dataset.quota;
+          const newQ = prompt(`Установите лимит токенов для @${uName} (-1 = безлимит, 50000 = стандарт):`, curQ);
+          if (newQ !== null && newQ.trim() !== '') {
             await fetch('/api/admin/tokens/set_quota', {
               method: 'POST',
-              headers: authHeaders,
-              body: JSON.stringify({ username: uName, quota: -1, allowed_models: ["*"] })
+              headers: authHeaders(),
+              body: JSON.stringify({ username: uName, quota: parseInt(newQ.trim()) })
             });
-            showToast(`Для @${uName} включен полный БЕЗЛИМИТ!`);
+            showToast(`Лимит для @${uName} установлен на ${newQ}`);
             loadTokens();
-          });
-        });
+          }
+        };
+      });
+      document.querySelectorAll('.btn-edit-models').forEach(btn => {
+        btn.onclick = async function() {
+          const uName = this.dataset.user;
+          const curModels = JSON.parse(this.dataset.models || '["*"]');
+          const promptStr = prompt(
+            `Доступные модели для @${uName} (через запятую, либо * для всех):\n\nВарианты: *, gemini-flash-latest, gemini-pro-latest, deepseek-chat`,
+            curModels.join(', ')
+          );
+          if (promptStr !== null) {
+            const list = promptStr.split(',').map(s => s.trim()).filter(s => s);
+            await fetch('/api/admin/tokens/update_models', {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({ username: uName, allowed_models: list.length ? list : ["*"] })
+            });
+            showToast(`Модели для @${uName} обновлены: ${list.join(', ')}`);
+            loadTokens();
+          }
+        };
+      });
+      document.querySelectorAll('.btn-reset-tokens').forEach(btn => {
+        btn.onclick = async function() {
+          const uName = this.dataset.user;
+          if (confirm(`Сбросить счетчик использованных токенов для @${uName} в 0?`)) {
+            await fetch('/api/admin/tokens/reset_usage', {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({ username: uName })
+            });
+            showToast(`Счетчик для @${uName} сброшен`);
+            loadTokens();
+          }
+        };
+      });
+      document.querySelectorAll('.btn-del-stats').forEach(btn => {
+        btn.onclick = async function() {
+          const uName = this.dataset.user;
+          if (confirm(`Удалить запись статистики для @${uName}?`)) {
+            await fetch(`/api/admin/tokens/user/${uName}`, { method: 'DELETE', headers: authHeaders() });
+            showToast(`Запись @${uName} удалена`);
+            loadTokens();
+          }
+        };
+      });
 
-        document.querySelectorAll('.btn-quota').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const uName = btn.getAttribute('data-user');
-            const curQ = btn.getAttribute('data-quota');
-            const newQ = prompt(`Установите лимит токенов для @${uName} (-1 = безлимит, 50000 = стандарт):`, curQ);
-            if (newQ !== null && newQ.trim() !== '') {
-              await fetch('/api/admin/tokens/set_quota', {
-                method: 'POST',
-                headers: authHeaders,
-                body: JSON.stringify({ username: uName, quota: parseInt(newQ.trim()) })
-              });
-              showToast(`Лимит для @${uName} установлен на ${newQ}`);
-              loadTokens();
-            }
-          });
-        });
-
-        document.querySelectorAll('.btn-edit-models').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const uName = btn.getAttribute('data-user');
-            const curModels = JSON.parse(btn.getAttribute('data-models') || '["*"]');
-            const promptStr = prompt(
-              `Доступные модели для @${uName} (через запятую, либо * для всех):
-
-Варианты: *, gemini-flash-latest, gemini-pro-latest, deepseek-chat`,
-              curModels.join(', ')
-            );
-            if (promptStr !== null) {
-              const list = promptStr.split(',').map(s => s.trim()).filter(s => s);
-              await fetch('/api/admin/tokens/update_models', {
-                method: 'POST',
-                headers: authHeaders,
-                body: JSON.stringify({ username: uName, allowed_models: list.length ? list : ["*"] })
-              });
-              showToast(`Модели для @${uName} обновлены: ${list.join(', ')}`);
-              loadTokens();
-            }
-          });
-        });
-
-        document.querySelectorAll('.btn-reset-tokens').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const uName = btn.getAttribute('data-user');
-            if (confirm(`Сбросить счетчик использованных токенов для @${uName} в 0?`)) {
-              await fetch('/api/admin/tokens/reset_usage', {
-                method: 'POST',
-                headers: authHeaders,
-                body: JSON.stringify({ username: uName })
-              });
-              showToast(`Счетчик для @${uName} сброшен`);
-              loadTokens();
-            }
-          });
-        });
-
-        document.querySelectorAll('.btn-del-stats').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const uName = btn.getAttribute('data-user');
-            if (confirm(`Удалить запись статистики для @${uName}?`)) {
-              await fetch(`/api/admin/tokens/user/${uName}`, { method: 'DELETE', headers: authHeaders });
-              showToast(`Запись @${uName} удалена`);
-              loadTokens();
-            }
-          });
-        });
-
-      } catch(e){}
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--accent-rose);">Ошибка: ${e.message}</td></tr>`;
+      console.error('loadTokens error:', e);
     }
+  }
 
-    // Button: Remove all limits for everyone
-    document.getElementById('btnRemoveAllLimits').addEventListener('click', async () => {
-      if (confirm('Снять ВСЕ лимиты токенов и открыть ВСЕ модели для абсолютно всех пользователей?')) {
-        const res = await fetch('/api/admin/tokens/remove_all_limits', { method: 'POST', headers: authHeaders });
-        const d = await res.json();
-        showToast(d.message);
-        loadTokens();
+  // 3. Invites
+  async function loadInvites() {
+    const tbody = document.getElementById('invitesTbody');
+    try {
+      const res = await fetch('/api/admin/vk/invites', { headers: authHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const list = data.invites || [];
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Нет инвайтов</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(inv => `
+        <tr>
+          <td><code style="background:rgba(255,255,255,0.08); padding:3px 6px; border-radius:4px; font-weight:700; color:#93c5fd;">${inv.code}</code></td>
+          <td>@${inv.target_username || 'любой'}</td>
+          <td><span style="color:${inv.is_active ? 'var(--accent-emerald)' : 'var(--text-muted)'}; font-weight:600;">${inv.is_active ? '🟢 Активен' : '⚪ Использован'}</span></td>
+          <td>${inv.claimed_by_vk || '—'}</td>
+          <td style="font-size:11px; color:var(--text-muted);">${inv.created_at}</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-action" onclick="navigator.clipboard.writeText('${inv.code}'); showToast('Инвайт-код скопирован!');">📋</button>
+              <button class="btn-action delete btn-del-invite" data-code="${inv.code}">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.btn-del-invite').forEach(btn => {
+        btn.onclick = async function() {
+          const code = this.dataset.code;
+          if (confirm(`Удалить инвайт-код ${code}?`)) {
+            await fetch(`/api/admin/vk/invites/${code}`, { method: 'DELETE', headers: authHeaders() });
+            showToast(`Инвайт-код ${code} удален`);
+            loadInvites();
+          }
+        };
+      });
+
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--accent-rose);">Ошибка: ${e.message}</td></tr>`;
+      console.error('loadInvites error:', e);
+    }
+  }
+
+  // MAX Bot config
+  async function loadMaxConfig() {
+    try {
+      const res = await fetch('/api/admin/max/config', { headers: authHeaders() });
+      const d = await res.json();
+      const el = document.getElementById('maxConfigStatus');
+      if (d.is_configured) {
+        el.innerHTML = `<span style="color:var(--accent-emerald);">✅ MAX Bot активен: токен <code>${d.max_bot_token_masked}</code> • Бот: <strong>@se14050529_bot</strong></span>`;
+      } else {
+        el.innerHTML = `<span style="color:var(--accent-rose);">⚠️ Токен MAX Bot не задан. Введите токен ниже.</span>`;
+      }
+      const inp = document.getElementById('maxBotToken');
+      if (inp && d.max_bot_token) inp.placeholder = d.max_bot_token_masked;
+    } catch(e) {
+      console.error('loadMaxConfig error:', e);
+    }
+  }
+
+  // ======================== ОБРАБОТЧИКИ ФОРМ ========================
+
+  // Login form
+  document.getElementById('loginForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!username || !password) return;
+    const ok = await login(username, password);
+    if (ok) {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('appContainer').classList.add('active');
+      // Загружаем данные
+      loadUsers();
+      loadTokens();
+      loadInvites();
+      loadMaxConfig();
+      // Обновляем имя пользователя
+      document.getElementById('adminUserBadge').innerText = '👤 ' + username;
+    }
+  };
+
+  // Logout
+  document.getElementById('btnLogout').onclick = logout;
+
+  // Register new user (исправлен путь на /api/auth/register)
+  document.getElementById('addUserForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value.trim();
+    const display_name = document.getElementById('newDisplayName').value.trim();
+    const role = document.getElementById('newRole').value;
+    const permissions = {
+      can_chat: document.getElementById('permChat').checked,
+      can_storage: document.getElementById('permStorage').checked,
+      can_execute_scripts: document.getElementById('permScripts').checked,
+      can_manage_skills: document.getElementById('permSkills').checked,
+      is_admin: role === 'admin'
+    };
+    if (!username || !password) { showToast('Логин и пароль обязательны', true); return; }
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ username, password, display_name, role, permissions })
+      });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(data.message);
+        loadUsers();
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newDisplayName').value = '';
+      } else {
+        showToast('Ошибка: ' + (data.message || data.error), true);
+      }
+    } catch (e) {
+      showToast('Ошибка сети: ' + e.message, true);
+      console.error(e);
+    }
+  };
+
+  // Bind VK
+  document.getElementById('bindVkForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('bindUsername').value.trim();
+    const vk_id = document.getElementById('bindVkId').value.trim();
+    if (!username || !vk_id) { showToast('Заполните оба поля', true); return; }
+    const res = await fetch('/api/admin/vk/bind', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ username, vk_id })
+    });
+    const data = await res.json();
+    showToast(data.message, data.status !== 'ok');
+    if (data.status === 'ok') loadUsers();
+  };
+
+  // Bind MAX
+  document.getElementById('bindMaxForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('maxBindUsername').value.trim();
+    const max_id = document.getElementById('maxBindUserId').value.trim();
+    if (!username || !max_id) { showToast('Заполните оба поля', true); return; }
+    const res = await fetch('/api/admin/max/bind', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ username, max_id })
+    });
+    const data = await res.json();
+    showToast(data.message, data.status !== 'ok');
+    if (data.status === 'ok') loadUsers();
+  };
+
+  // MAX Bot token
+  document.getElementById('maxConfigForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const token = document.getElementById('maxBotToken').value.trim();
+    if (!token) { showToast('Введите токен!', true); return; }
+    const res = await fetch('/api/admin/max/config', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ max_bot_token: token })
+    });
+    const data = await res.json();
+    showToast(data.message, data.status !== 'ok');
+    if (data.status === 'ok') {
+      document.getElementById('maxBotToken').value = '';
+      loadMaxConfig();
+    }
+  };
+
+  // Generate invite
+  document.getElementById('btnGenInvite').onclick = async function() {
+    const target = prompt('Целевой аккаунт (username) для инвайта (оставьте пустым для любого):');
+    const note = prompt('Примечание (необязательно):');
+    const res = await fetch('/api/admin/vk/generate_invite', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ target_username: target || '', note: note || '' })
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      showToast(`Инвайт-код создан: ${data.code}`);
+      loadInvites();
+    } else {
+      showToast('Ошибка: ' + (data.message || data.error), true);
+    }
+  };
+
+  // Remove all limits
+  document.getElementById('btnRemoveAllLimits').onclick = async function() {
+    if (confirm('Снять ВСЕ лимиты токенов и открыть ВСЕ модели для всех пользователей?')) {
+      const res = await fetch('/api/admin/tokens/remove_all_limits', { method: 'POST', headers: authHeaders() });
+      const data = await res.json();
+      showToast(data.message);
+      loadTokens();
+    }
+  };
+
+  // Refresh buttons
+  document.getElementById('btnRefreshUsers').onclick = loadUsers;
+  document.getElementById('btnRefreshTokens').onclick = loadTokens;
+
+  // ======================== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ========================
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // переключаем классы
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      const target = document.getElementById(this.dataset.tab);
+      if (target) target.classList.add('active');
+
+      // Загружаем данные соответствующей вкладки
+      if (this.dataset.tab === 'tabUsers') loadUsers();
+      else if (this.dataset.tab === 'tabTokens') loadTokens();
+      else if (this.dataset.tab === 'tabVK') {
+        loadInvites();
+        loadMaxConfig();
       }
     });
+  });
 
-    // 3. Load Invites with Delete Option
-    async function loadInvites() {
-      const tbody = document.getElementById('invitesTbody');
+  // ======================== ПРОВЕРКА АВТОРИЗАЦИИ ПРИ СТАРТЕ ========================
+  (async function init() {
+    const token = getToken();
+    if (token) {
       try {
-        const res = await fetch('/api/admin/vk/invites', { headers: authHeaders });
-        const data = await res.json();
-        const list = data.invites || [];
-        tbody.innerHTML = '';
-
-        list.forEach(inv => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><code style="background:rgba(255,255,255,0.08); padding:3px 6px; border-radius:4px; font-weight:700; color:#93c5fd;">${inv.code}</code></td>
-            <td>@${inv.target_username || 'любой'}</td>
-            <td><span style="color:${inv.is_active ? 'var(--accent-emerald)' : 'var(--text-muted)'}; font-weight:600;">${inv.is_active ? '🟢 Активен' : '⚪ Использован'}</span></td>
-            <td>${inv.claimed_by_vk ? `VK ID: ${inv.claimed_by_vk}` : '—'}</td>
-            <td style="font-size:11px; color:var(--text-muted);">${inv.created_at}</td>
-            <td>
-              <div style="display:flex; gap:6px;">
-                <button class="btn-action" onclick="navigator.clipboard.writeText('${inv.code}'); showToast('Инвайт-код скопирован!');">📋 Копировать</button>
-                <button class="btn-action delete btn-del-invite" data-code="${inv.code}">🗑️</button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        document.querySelectorAll('.btn-del-invite').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const code = btn.getAttribute('data-code');
-            if (confirm(`Удалить инвайт-код ${code}?`)) {
-              await fetch(`/api/admin/vk/invites/${code}`, { method: 'DELETE', headers: authHeaders });
-              showToast(`Инвайт-код ${code} удален`);
-              loadInvites();
-            }
-          });
-        });
-
-      } catch(e){}
-    }
-
-    // Quick Bind My VK Button
-    const btnQuickVk = document.getElementById('btnQuickBindMyVk');
-    if (btnQuickVk) {
-      btnQuickVk.addEventListener('click', async () => {
-        const res = await fetch('/api/admin/vk/bind_my_vk', { method: 'POST', headers: authHeaders });
-        const d = await res.json();
-        showToast(d.message);
-        loadUsers();
-        loadGlobalVkConfig();
-      });
-    }
-
-    // MAX Bot: Load config
-    async function loadMaxConfig() {
-      try {
-        const res = await fetch('/api/admin/max/config', { headers: authHeaders });
-        const d = await res.json();
-        const el = document.getElementById('maxConfigStatus');
-        if (el) {
-          if (d.is_configured) {
-            el.innerHTML = `<span style="color:var(--accent-emerald);">✅ MAX Bot активен: токен <code>${d.max_bot_token_masked}</code> • Бот: <strong>@se14050529_bot</strong></span>`;
-          } else {
-            el.innerHTML = `<span style="color:var(--accent-rose);">⚠️ Токен MAX Bot не задан. Введите токен ниже.</span>`;
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (res.ok) {
+          const user = await res.json();
+          if (user.permissions?.is_admin) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+            document.getElementById('adminUserBadge').innerText = '👤 ' + (user.username || 'admin');
+            loadUsers();
+            loadTokens();
+            loadInvites();
+            loadMaxConfig();
+            return;
           }
         }
-        const inp = document.getElementById('maxBotToken');
-        if (inp && d.max_bot_token) inp.placeholder = d.max_bot_token_masked;
       } catch(e) {}
+      clearToken();
     }
+    document.getElementById('loginContainer').style.display = 'block';
+    document.getElementById('appContainer').classList.remove('active');
+  })();
 
-    // MAX Bot: Save token form
-    const maxConfigForm = document.getElementById('maxConfigForm');
-    if (maxConfigForm) {
-      maxConfigForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const token = document.getElementById('maxBotToken').value.trim();
-        if (!token) { showToast('Введите токен!', true); return; }
-        const res = await fetch('/api/admin/max/config', {
-          method: 'POST', headers: authHeaders,
-          body: JSON.stringify({ max_bot_token: token })
-        });
-        const d = await res.json();
-        showToast(d.message, d.status !== 'ok');
-        document.getElementById('maxBotToken').value = '';
-        loadMaxConfig();
-      });
-    }
-
-    // MAX Bot: Bind MAX ID form
-    const bindMaxForm = document.getElementById('bindMaxForm');
-    if (bindMaxForm) {
-      bindMaxForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('maxBindUsername').value.trim();
-        const maxId = document.getElementById('maxBindUserId').value.trim();
-        const res = await fetch('/api/admin/max/bind', {
-          method: 'POST', headers: authHeaders,
-          body: JSON.stringify({ username, max_id: maxId })
-        });
-        const d = await res.json();
-        showToast(d.message, d.status !== 'ok');
-        if (d.status === 'ok') {
-          document.getElementById('maxBindUsername').value = '';
-          document.getElementById('maxBindUserId').value = '';
-          loadUsers();
-        }
-      });
-    }
-
-    // MAX Bot: Edit/Delete MAX ID buttons (delegated)
-    document.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('btn-max-edit')) {
-        const username = e.target.dataset.user;
-        const curId = e.target.dataset.maxid || '';
-        const newId = prompt(`MAX ID для @${username}:`, curId);
-        if (newId === null) return;
-        const res = await fetch('/api/admin/users/update_max', {
-          method: 'POST', headers: authHeaders,
-          body: JSON.stringify({ username, max_id: newId })
-        });
-        const d = await res.json();
-        showToast(d.message, d.status !== 'ok');
-        loadUsers();
-      }
-      if (e.target.classList.contains('btn-max-del')) {
-        const username = e.target.dataset.user;
-        if (confirm(`Отвязать MAX ID от @${username}?`)) {
-          const res = await fetch(`/api/admin/max/unbind/${username}`, { method: 'DELETE', headers: authHeaders });
-          const d = await res.json();
-          showToast(d.message, d.status !== 'ok');
-          loadUsers();
-        }
-      }
-    });
-
-    // Init
-    loadUsers();
-    loadGlobalVkConfig();
-    loadMaxConfig();
-    loadTokens();
-    loadInvites();
-  </script>
+</script>
 </body>
 </html>
