@@ -18,5 +18,10 @@ call venv\Scripts\activate.bat
 echo Установка зависимостей (если нужно)...
 pip install -r requirements.txt --quiet
 
-python scripts\web_server.py
+if exist "keys.txt" (
+    echo Найден файл keys.txt. Копируем ключи в config\.env...
+    copy /Y "keys.txt" "config\.env" > nul
+)
+
+python scripts\main.py
 pause
