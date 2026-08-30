@@ -1905,3 +1905,50 @@ async def get_available_models(request: Request):
         "builtin_models": gemini_models,
         "default": "omniroute:default" if omni_online else "gemini-3.1-flash-lite"
     }
+
+import subprocess
+
+@app.post("/api/admin/system/update")
+async def admin_system_update(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
+    try:
+        result = subprocess.run(["git", "pull", "origin", "main"], capture_output=True, text=True, cwd=str(BASE_DIR))
+        if result.returncode == 0:
+            return {"status": "ok", "message": f"Успешно обновлено!\n{result.stdout}\nПерезапустите сервер, чтобы применить изменения."}
+        else:
+            return {"status": "error", "message": f"Ошибка: {result.stderr}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/admin/system/env")
+async def admin_get_env(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
+    try:
+        content = ""
+        if ENV_FILE.exists():
+            content = ENV_FILE.read_text(encoding="utf-8", errors="ignore")
+        return {"status": "ok", "content": content}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/admin/system/env")
+async def admin_save_env(request: Request):
+    user = get_current_user_from_req(request)
+    if user and not user.get("permissions", {}).get("is_admin"):
+        return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
+    try:
+        data = await request.json()
+        content = data.get("content", "")
+        ENV_FILE.write_text(content, encoding="utf-8")
+        
+        # Также перезаписываем keys.txt чтобы при рестарте он не перезаписал .env старыми данными
+        keys_file = BASE_DIR / "keys.txt"
+        keys_file.write_text(content, encoding="utf-8")
+        
+        return {"status": "ok", "message": "Файл .env сохранен. Пожалуйста, перезапустите сервер для применения изменений."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

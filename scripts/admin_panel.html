@@ -349,6 +349,7 @@
     <button class="tab-btn active" data-tab="tabUsers">👥 Пользователи & Доступ</button>
     <button class="tab-btn" data-tab="tabTokens">📊 Расход Токенов & Квоты</button>
     <button class="tab-btn" data-tab="tabVK">📲 VK Whitelist & Инвайты</button>
+    <button class="tab-btn" data-tab="tabSystem">⚙️ Система</button>
   </div>
 
   <div class="admin-container">
@@ -1088,6 +1089,71 @@
       }
     });
   });
+
+
+  // System Update
+  document.getElementById('btnUpdateGithub').onclick = async function() {
+    if (confirm('Вы уверены, что хотите стянуть последние обновления с GitHub?')) {
+      const btn = this;
+      btn.disabled = true;
+      btn.innerText = 'Обновление...';
+      try {
+        const res = await fetch('/api/admin/system/update', { method: 'POST', headers: authHeaders() });
+        const data = await res.json();
+        showToast(data.message, data.status !== 'ok');
+      } catch (err) {
+        showToast('Ошибка при обновлении: ' + err, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '📥 Обновить с GitHub';
+      }
+    }
+  };
+
+
+  // Env Editor
+  async function loadEnvConfig() {
+    try {
+      const res = await fetch('/api/admin/system/env', { headers: authHeaders() });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        document.getElementById('envEditor').value = data.content;
+      } else {
+        showToast('Ошибка загрузки .env: ' + data.message, true);
+      }
+    } catch (err) {
+      showToast('Ошибка: ' + err, true);
+    }
+  }
+
+  document.getElementById('btnReloadEnv').onclick = loadEnvConfig;
+
+  document.getElementById('btnSaveEnv').onclick = async function() {
+    const content = document.getElementById('envEditor').value;
+    if (!confirm('Сохранить изменения в .env? Это может повлиять на работу сервера.')) return;
+    try {
+      const btn = this;
+      btn.disabled = true;
+      const res = await fetch('/api/admin/system/env', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ content: content })
+      });
+      const data = await res.json();
+      showToast(data.message, data.status !== 'ok');
+    } catch (err) {
+      showToast('Ошибка сохранения: ' + err, true);
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // Override loadUsers to also load env if we are admins
+  const originalLoadUsers = loadUsers;
+  loadUsers = async function() {
+    await originalLoadUsers();
+    loadEnvConfig();
+  };
 
   // ======================== ПРОВЕРКА АВТОРИЗАЦИИ ПРИ СТАРТЕ ========================
   (async function init() {
