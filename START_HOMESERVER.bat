@@ -14,5 +14,9 @@ if exist "Everywhere\Everywhere.exe" (
 )
 
 call venv\Scripts\activate.bat
+
+echo Установка зависимостей (если нужно)...
+pip install -r requirements.txt --quiet
+
 python scripts\web_server.py
 pause
