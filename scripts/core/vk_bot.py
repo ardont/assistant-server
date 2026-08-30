@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-VK Bot 24/7 Service for HomeServer AI Hub (Jarvis)
+VK Bot 24/7 Service for HomeServer AI Hub (HomeServer)
 """
 import os
 import sys

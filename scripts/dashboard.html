@@ -425,7 +425,7 @@
     <header class="navbar">
         <div class="nav-brand">
             <span>🌌 HomeServer</span>
-            <span class="nav-brand-badge">JARVIS 24/7</span>
+            <span class="nav-brand-badge">AI HUB 24/7</span>
         </div>
 
         <nav class="nav-tabs">
@@ -485,7 +485,7 @@
                 <div class="chat-container">
                     <div id="chatMessages" class="chat-messages">
                         <div class="message-bubble assistant">
-                            👋 Приветствую, <b>@ardont</b>! Я — Джарвис, твой персональный AI-хаб. Все системы активны, фокус дня настроен на подготовку к ШАД и разработку сервера. Чем займемся?
+                            👋 Приветствую, <b>@ardont</b>! Я твой персональный AI-хаб. Все системы активны, фокус дня настроен на подготовку к ШАД и разработку сервера. Чем займемся?
                         </div>
                     </div>
 
@@ -501,7 +501,7 @@
                     <div class="chat-input-bar">
                         <input type="file" id="fileUploadInput" style="display:none;" onchange="handleFileSelect(event)">
                         <button class="btn-icon" title="Прикрепить файл" onclick="document.getElementById('fileUploadInput').click()">📎</button>
-                        <textarea id="chatInput" class="chat-textarea" placeholder="Спросить Джарвиса, разобрать тему или выполнить задачу..."></textarea>
+                        <textarea id="chatInput" class="chat-textarea" placeholder="Спросить ассистента, разобрать тему или выполнить задачу..."></textarea>
                         <button id="btnSendChat" class="btn-send">Отправить 🚀</button>
                     </div>
                 </div>
@@ -901,7 +901,7 @@
             appendMsg('user', msg + (attachedFile ? `\n📎 [Файл: ${attachedFile.name}]` : ''));
             input.value = '';
 
-            const loadingId = appendMsg('assistant', '⏳ <i>Джарвис думает...</i>');
+            const loadingId = appendMsg('assistant', '⏳ <i>Ассистент думает...</i>');
             const modelVal = document.getElementById('modelSelector').value;
 
             try {

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Multi-Track Growth & Study Engine for HomeServer AI Hub (Jarvis)
+Multi-Track Growth & Study Engine for HomeServer AI Hub (HomeServer)
 Manages user development tracks (ШАД, Data Science, Python, Projects),
 milestones, study materials, and intermediate progress check-ins.
 """

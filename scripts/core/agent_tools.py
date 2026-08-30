@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Jarvis Autonomous Tools Suite for HomeServer AI Hub
+HomeServer Autonomous Tools Suite for HomeServer AI Hub
 Provides Web Search, OSINT, Git Operations, Terminal Execution, LeadGen Extractor, and Deep Research Synthesizer.
 All powered 100% by Cloud LLM models (Gemini Flash + DeepSeek).
 """

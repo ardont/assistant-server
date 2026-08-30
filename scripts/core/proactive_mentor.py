@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Proactive AI Mentor & Growth Accountability Engine for HomeServer AI Hub (Jarvis)
+Proactive AI Mentor & Growth Accountability Engine for HomeServer AI Hub (HomeServer)
 Initiates personalized check-ins with @ardont in VK / Push:
 - 🌅 Morning Kick-Off (09:00 - 11:00): Today's focus topics, motivation, mini-quiz question for ШАД.
 - ☀️ Midday Check-In (14:00 - 16:00): Progress on current tasks, intermediate results, blocker analysis.
@@ -33,7 +33,7 @@ def get_mentor_dialog_prompt(slot: str, username: str = "ardont") -> str:
     tracks_info = get_tracks_summary_for_prompt(clean_user)
 
     prompts = {
-        "morning": f"""Ты — Джарвис, персональный наставник и ментор Сергея (@{clean_user}).
+        "morning": f"""Ты — Ассистент, персональный наставник и ментор Сергея (@{clean_user}).
 {tracks_info}
 
 Сейчас утро. Напиши бодрое, вдохновляющее и четкое утреннее сообщение в ВК:
@@ -42,7 +42,7 @@ def get_mentor_dialog_prompt(slot: str, username: str = "ardont") -> str:
 3. Задай 1 короткий, интересный вопрос/задачку для разминки ума (по линейной алгебре, теории вероятностей или ML) или спроси, во сколько планирует начать занятия.
 Сделай сообщение живым, кратким (до 4-5 предложений) и с аккуратными эмодзи.""",
 
-        "midday": f"""Ты — Джарвис, ментор Сергея (@{clean_user}).
+        "midday": f"""Ты — Ассистент, ментор Сергея (@{clean_user}).
 {tracks_info}
 
 Сейчас середина дня. Напиши краткий дружелюбный чекап в ВК:
@@ -50,7 +50,7 @@ def get_mentor_dialog_prompt(slot: str, username: str = "ardont") -> str:
 2. Уточни, есть ли непонятные темы или затыки, по которым нужно сгенерировать Study Guide через NotebookLM или написать скрипт.
 3. Подбодри двигаться вперед.""",
 
-        "evening": f"""Ты — Джарвис, ментор Сергея (@{clean_user}).
+        "evening": f"""Ты — Ассистент, ментор Сергея (@{clean_user}).
 {tracks_info}
 
 Сейчас вечер. Напиши сообщение для подведения итогов дня в ВК:
@@ -60,7 +60,7 @@ def get_mentor_dialog_prompt(slot: str, username: str = "ardont") -> str:
     }
 
     prompt = prompts.get(slot, prompts["morning"])
-    sys_inst = f"Ты — Джарвис, личный наставник и умный ментор Сергея (@{clean_user}) по Data Science, ШАД и разработке."
+    sys_inst = f"Ты — Ассистент, личный наставник и умный ментор Сергея (@{clean_user}) по Data Science, ШАД и разработке."
     try:
         res = query_llm_text(sys_inst, prompt, username=clean_user)
         if res and "⚠️" not in res:
@@ -69,7 +69,7 @@ def get_mentor_dialog_prompt(slot: str, username: str = "ardont") -> str:
         print(f"[Proactive Mentor Error]: {e}")
 
     fallbacks = {
-        "morning": f"🌅 Доброе утро, Сергей! Джарвис на связи. Главный фокус сегодня: подготовка к ШАД (Линейная алгебра/SVD) и запуск Antigravity дашборда. С чего планируешь начать?",
+        "morning": f"🌅 Доброе утро, Сергей! Ассистент на связи. Главный фокус сегодня: подготовка к ШАД (Линейная алгебра/SVD) и запуск Antigravity дашборда. С чего планируешь начать?",
         "midday": f"☀️ Привет! Как продвигаются задачи по ШАД и коду? Нужна ли помощь или свежий Study Guide по текущей теме?",
         "evening": f"🌙 Добрый вечер! Как прошел день? Напиши, что удалось разобрать или выполни команду /done <тема>, чтобы я зафиксировал твой прогресс в треках!"
     }
@@ -111,7 +111,7 @@ def check_and_send_proactive_checkin(force_slot: str = "", username: str = "ardo
 
     # 1. Push via ntfy
     slot_titles = {"morning": "🌅 Утренний старт", "midday": "☀️ Дневной чекап", "evening": "🌙 Вечерняя рефлексия"}
-    send_push(slot_titles.get(slot_to_trigger, "🎓 Джарвис Ментор"), msg, priority="default", tags="mortar_board")
+    send_push(slot_titles.get(slot_to_trigger, "🎓 Ассистент Ментор"), msg, priority="default", tags="mortar_board")
 
     # 2. Send via VK Bot to 816140871
     try:
@@ -119,7 +119,7 @@ def check_and_send_proactive_checkin(force_slot: str = "", username: str = "ardo
         token, user_id, _ = get_vk_config()
         clean_uid = str(user_id).strip().strip("'\"")
         if token and clean_uid.isdigit():
-            send_vk_message(int(clean_uid), f"🎓 [Джарвис • Наставник]\n\n{msg}", token)
+            send_vk_message(int(clean_uid), f"🎓 [Ассистент • Наставник]\n\n{msg}", token)
             print(f"[Proactive Mentor] Sent {slot_to_trigger} message to VK user {clean_uid}")
     except Exception as e:
         print(f"[Proactive Mentor VK Error]: {e}")
