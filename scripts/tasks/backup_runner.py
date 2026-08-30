@@ -13,7 +13,7 @@ print("=" * 50)
 print("💾 Запуск Резервного Копирования HomeServer")
 print("=" * 50)
 
-base_dir = Path("C:/HomeServer")
+base_dir = Path(__file__).resolve().parent.parent.parent
 backup_dir = base_dir / "backups"
 backup_dir.mkdir(parents=True, exist_ok=True)
 

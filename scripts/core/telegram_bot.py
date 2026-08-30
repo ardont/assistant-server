@@ -18,7 +18,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 INBOX_DIR = BASE_DIR / "inbox"
 SCRIPTS_DIR = BASE_DIR / "scripts"

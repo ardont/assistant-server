@@ -13,7 +13,7 @@ import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = BASE_DIR / "config"
 TASKS_CONFIG = CONFIG_DIR / "tasks_registry.json"
 LOGS_DIR = BASE_DIR / "logs" / "tasks"

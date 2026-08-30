@@ -27,7 +27,7 @@ import schedule
 import uvicorn
 from web_server import app
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent
 INBOX_DIR = BASE_DIR / "inbox"
 
 def job_heartbeat():

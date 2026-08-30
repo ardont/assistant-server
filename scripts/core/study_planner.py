@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 PROFILE_PATH = BASE_DIR / "config" / "user_profile.json"
 PLAN_FILE = BASE_DIR / "daily_plan.json"

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 PROFILE_PATH = BASE_DIR / "config" / "user_profile.json"
 QUIZ_FILE = BASE_DIR / "quiz_progress.json"

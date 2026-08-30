@@ -20,7 +20,7 @@ from typing import Dict, Any, List, Optional
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SKILLS_DIR = BASE_DIR / "skills"
 CONFIG_DIR = BASE_DIR / "config"
 MANIFEST_FILE = CONFIG_DIR / "skills_manifest.json"

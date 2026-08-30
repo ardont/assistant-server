@@ -22,7 +22,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from core.notifier import notify_info, notify_warning, notify_error, log_event
 from core.privacy_shield import sanitize_text
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 PROFILE_PATH = BASE_DIR / "config" / "user_profile.json"
 

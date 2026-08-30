@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = BASE_DIR / "config" / ".env"
 CALENDAR_FILE = BASE_DIR / "calendar_events.json"
 

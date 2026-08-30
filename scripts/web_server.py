@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent
 INBOX_DIR = BASE_DIR / "inbox"
 ARCHIVE_DIR = BASE_DIR / "archive"
 CONFIG_DIR = BASE_DIR / "config"

@@ -22,7 +22,7 @@ from typing import Dict, Any, List, Optional
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = Path("C:/HomeServer")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PROJECTS_DIR = BASE_DIR / "projects"
 LEADS_DIR = BASE_DIR / "data" / "leads"
 RESEARCH_DIR = BASE_DIR / "archive" / "research"
