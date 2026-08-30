@@ -1183,26 +1183,67 @@ async def get_full_files_tree():
     # Сканируем папки archive, data, inbox
     archive_dir = BASE_DIR / "archive"
     inbox_dir = BASE_DIR / "inbox"
+    documents_dir = BASE_DIR / "documents"
     
     archive_nodes = scan_directory_tree(archive_dir, BASE_DIR) if archive_dir.exists() else []
     inbox_nodes = scan_directory_tree(inbox_dir, BASE_DIR) if inbox_dir.exists() else []
+    documents_nodes = scan_directory_tree(documents_dir, BASE_DIR) if documents_dir.exists() else []
     
-    return [
-        {
-            "name": "archive (Архив проектов и документов)",
-            "type": "folder",
-            "path": "archive",
-            "children": archive_nodes,
-            "is_root": True
-        },
-        {
-            "name": "inbox (Входящие файлы)",
-            "type": "folder",
-            "path": "inbox",
-            "children": inbox_nodes,
-            "is_root": True
-        }
-    ]
+    return {
+        "archive": archive_nodes,
+        "inbox": inbox_nodes,
+        "documents": documents_nodes
+    }
+
+@app.get("/api/git/check")
+async def git_check():
+    import subprocess
+    try:
+        subprocess.run(["git", "fetch"], cwd=str(BASE_DIR), check=True)
+        status = subprocess.run(["git", "status", "-uno"], cwd=str(BASE_DIR), capture_output=True, text=True).stdout
+        if "Your branch is behind" in status:
+            return {"status": "update_available", "message": "Доступно обновление на GitHub."}
+        return {"status": "up_to_date", "message": "У вас последняя версия."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/git/update")
+async def git_update():
+    import subprocess
+    import threading
+    def update_task():
+        try:
+            from core.process_manager import check_and_update_from_git
+            check_and_update_from_git()
+        except Exception:
+            pass
+    threading.Thread(target=update_task, daemon=True).start()
+    return {"status": "ok", "message": "Обновление запущено, сервер будет перезапущен."}
+
+class ConfigSaveRequest(BaseModel):
+    env_content: str
+
+@app.post("/api/config/save")
+async def save_config(req: ConfigSaveRequest):
+    try:
+        with open(CONFIG_DIR / ".env", "w", encoding="utf-8") as f:
+            f.write(req.env_content)
+        return {"status": "ok", "message": "Настройки успешно сохранены!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/system/restart")
+async def restart_system():
+    import subprocess
+    import threading
+    import sys
+    import os
+    import time
+    def restart_task():
+        time.sleep(1)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+    threading.Thread(target=restart_task, daemon=True).start()
+    return {"status": "ok", "message": "Сервер перезапускается..."}
 
 # Универсальное скачивание любого файла по относительному пути
 @app.get("/api/download/file")
@@ -1830,37 +1871,6 @@ async def generate_study_guide_api(request: Request):
     from core.agent_tools import tool_notebooklm_synthesize
     res = tool_notebooklm_synthesize(topic, format_type=fmt, track=track)
     return {"status": "ok", "result": res}
-
-@app.get("/api/files/tree")
-async def get_files_tree(request: Request):
-    """Возвращает дерево рабочих файлов для левого сайдбара Antigravity."""
-    def build_tree(path: Path, max_depth=3, cur_depth=0):
-        if cur_depth >= max_depth or not path.exists():
-            return []
-        nodes = []
-        try:
-            for item in sorted(path.iterdir(), key=lambda x: (not x.is_dir(), x.name)):
-                if item.name.startswith(".") or item.name in ["venv", "__pycache__", "git", "gh"]:
-                    continue
-                node = {
-                    "name": item.name,
-                    "path": str(item.relative_to(BASE_DIR)).replace("\\", "/"),
-                    "is_dir": item.is_dir()
-                }
-                if item.is_dir():
-                    node["children"] = build_tree(item, max_depth, cur_depth + 1)
-                else:
-                    node["size_kb"] = round(item.stat().st_size / 1024, 1)
-                nodes.append(node)
-        except Exception:
-            pass
-        return nodes
-
-    return {
-        "documents": build_tree(BASE_DIR / "documents"),
-        "inbox": build_tree(BASE_DIR / "inbox"),
-        "skills": build_tree(BASE_DIR / "skills")
-    }
 
 @app.get("/api/models/available")
 async def get_available_models(request: Request):

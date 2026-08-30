@@ -339,6 +339,22 @@ def process_message(text: str, user_id: str, user_name: str,
             return "Dialog history is empty."
         return f"Dialog context:\n{summary}"
     
+    elif text_lower.startswith("/osint "):
+        target = full_message.split(maxsplit=1)[1].strip()
+        from core.agent_tools import tool_osint_lookup
+        try:
+            res = tool_osint_lookup(target)
+            return f"🔍 OSINT результат:\n{res[:3500]}"
+        except Exception as e:
+            return f"❌ Ошибка OSINT: {e}"
+    elif text_lower == "/update":
+        import threading
+        def update_task():
+            from core.process_manager import check_and_update_from_git
+            check_and_update_from_git()
+        threading.Thread(target=update_task, daemon=True).start()
+        return "🔄 Инициирована проверка обновлений GitHub..."
+    
     # ----- AI QUERY (с учётом контекста и возможного файла) -----
     context_summary = context_mgr.get_context_summary(user_id)
     full_query = f"{context_summary}\n\nNew question: {full_message}" if context_summary else full_message
@@ -346,11 +362,23 @@ def process_message(text: str, user_id: str, user_name: str,
     try:
         resp = ask_chat_agent(full_query, user_name=user_name)
         response = resp.get('response', 'Could not get response.')
+        
+        file_matches = re.findall(r'\[SEND_FILE:([^\]]+)\]', response)
+        response = re.sub(r'\[SEND_FILE:[^\]]+\]', '', response).strip()
+        
+        if file_matches:
+            cf_url = os.getenv("CLOUDFLARE_URL", "http://localhost:8000").rstrip("/")
+            for f in file_matches:
+                f = f.strip()
+                link = f"{cf_url}/api/download/file?path={urllib.parse.quote(f)}"
+                response += f"\n\n📎 Ссылка на файл '{Path(f).name}':\n{link}"
+                
     except Exception as e:
         response = f"AI error: {str(e)}"
     
     response = sanitize_outgoing_text(response)
-    context_mgr.add_message(user_id, response, is_user=False)
+    if response:
+        context_mgr.add_message(user_id, response, is_user=False)
     return response
 
 def run_max_bot_polling():
@@ -490,10 +518,32 @@ def run_max_bot_polling():
             print("[MAX Bot] Stopped by user request")
             break
         except Exception as e:
-            print(f"[MAX Bot] Critical error: {e}")
             import traceback
-            traceback.print_exc()
-            time.sleep(10)
+            from core.notifier import notify_error
+            from core.process_manager import check_and_update_from_git
+            
+            err_msg = traceback.format_exc()
+            print(f"[MAX Bot] Critical error: {e}\n{err_msg}")
+            
+            alert_msg = f"🚨 FATAL ERROR IN MAX BOT:\n{e}\n\nTraceback:\n{err_msg[-1500:]}"
+            notify_error("MAX Bot Crash", alert_msg)
+            
+            try:
+                # Попытаться отправить админу в MAX
+                admin_id = os.getenv("MAX_USER_ID", "")
+                if admin_id:
+                    send_max_message(admin_id, alert_msg, token)
+            except:
+                pass
+                
+            print("[MAX Bot] Вход в режим автовосстановления (ожидание патча с GitHub)...")
+            while True:
+                try:
+                    check_and_update_from_git()
+                except Exception as update_err:
+                    print(f"[AutoUpdate] Ошибка проверки GitHub: {update_err}")
+                
+                time.sleep(60)
 
 def start_max_bot_thread():
     t = threading.Thread(target=run_max_bot_polling, daemon=True, name="MAXBotThread")

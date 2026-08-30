@@ -64,3 +64,6 @@ tools/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Everywhere App
+Everywhere/

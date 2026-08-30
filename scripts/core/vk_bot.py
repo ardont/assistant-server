@@ -270,13 +270,48 @@ def handle_vk_event(item: dict, token: str, allowed_user_id: str):
         send_vk_message(peer_id, f"⚡ [HomeServer 24/7 Статус]\n• CPU: {cpu}%\n• RAM: {ram}%\n• Авторизован: @{bound_user}\n• Все службы активны!", token)
         return
 
+    if cmd_lower.startswith("/osint "):
+        target_info = clean_t.split(maxsplit=1)[1].strip()
+        send_vk_message(peer_id, f"🔍 Запускаю OSINT-поиск для: '{target_info}'...", token)
+        try:
+            from core.agent_tools import tool_osint_lookup
+            res = tool_osint_lookup(target_info)
+            send_vk_message(peer_id, res[:4000], token)
+        except Exception as e:
+            send_vk_message(peer_id, f"❌ Ошибка OSINT: {e}", token)
+        return
+
+    if cmd_lower == "/update":
+        send_vk_message(peer_id, "🔄 Инициирую проверку обновлений на GitHub. Сервер может перезапуститься...", token)
+        import threading
+        def update_task():
+            from core.process_manager import check_and_update_from_git
+            check_and_update_from_git()
+        threading.Thread(target=update_task, daemon=True).start()
+        return
+
     # Обычный AI-запрос с обработкой вложений
     keyboard = get_main_keyboard()
     attached_info = []
 
     for att in attachments:
         att_type = att.get("type")
-        if att_type == "doc":
+        if att_type == "photo":
+            photo = att.get("photo", {})
+            sizes = photo.get("sizes", [])
+            if sizes:
+                # Берем самое большое фото
+                max_size = max(sizes, key=lambda x: x.get("height", 0) * x.get("width", 0))
+                url = max_size.get("url")
+                if url:
+                    # Сохраняем в inbox временно для анализа
+                    tmp_img = INBOX_DIR / f"vk_photo_{from_id}_{int(time.time())}.jpg"
+                    try:
+                        urllib.request.urlretrieve(url, str(tmp_img))
+                        attached_info.append(f"[Изображение прикреплено и сохранено: {tmp_img.name}]")
+                    except Exception as e:
+                        attached_info.append(f"[Ошибка сохранения фото: {e}]")
+        elif att_type == "doc":
             doc = att.get("doc", {})
             title = doc.get("title", "document")
             url = doc.get("url")
@@ -302,8 +337,18 @@ def handle_vk_event(item: dict, token: str, allowed_user_id: str):
         query += "\n\n" + "\n".join(attached_info)
 
     if not query.strip():
-        send_vk_message(peer_id, "Привет! Я Джарвис — HomeServer AI Hub. Чем могу помочь?", token, keyboard)
+        send_vk_message(peer_id, "Жду ваших команд и вопросов.", token, keyboard)
         return
+
+    # Отправка статуса "печатает..."
+    try:
+        act_url = f"https://api.vk.com/method/messages.setActivity?peer_id={peer_id}&type=typing&v={VK_API_VERSION}&access_token={token}"
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        urllib.request.urlopen(urllib.request.Request(act_url), timeout=5, context=ssl_ctx)
+    except Exception:
+        pass
 
     try:
         from core.chat_agent import ask_chat_agent
@@ -397,8 +442,32 @@ def run_vk_bot_polling():
                         obj = upd.get("object", {})
                         handle_vk_event(obj, token, allowed_user_id)
         except Exception as e:
-            print(f"[VK Bot] Critical error: {e}. Перезапуск через 10 сек...")
-            time.sleep(10)
+            import traceback
+            from core.notifier import notify_error
+            from core.process_manager import check_and_update_from_git
+            
+            err_msg = traceback.format_exc()
+            print(f"[VK Bot] Critical error: {e}\n{err_msg}")
+            
+            # Уведомляем админа
+            alert_msg = f"🚨 FATAL ERROR IN VK BOT:\n{e}\n\nTraceback:\n{err_msg[-1500:]}"
+            notify_error("VK Bot Crash", alert_msg)
+            
+            if allowed_user_id:
+                try:
+                    send_vk_message(allowed_user_id, alert_msg, token)
+                except:
+                    pass
+            
+            print("[VK Bot] Вход в режим автовосстановления (ожидание патча с GitHub)...")
+            while True:
+                try:
+                    check_and_update_from_git()
+                except Exception as update_err:
+                    print(f"[AutoUpdate] Ошибка проверки GitHub: {update_err}")
+                
+                # Ждем 60 секунд перед следующей проверкой
+                time.sleep(60)
 
 def start_vk_bot_thread():
     import threading

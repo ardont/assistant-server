@@ -575,6 +575,21 @@ def tool_cloud_code_runner(script_code: str, language: str = "python", timeout_s
     except Exception as e:
         return f"Ошибка выполнения скрипта: {e}"
 
+def tool_find_file(query: str) -> str:
+    """Поиск файлов по имени в директориях inbox, archive, documents."""
+    query = query.lower()
+    results = []
+    for d_name in ["inbox", "archive", "documents"]:
+        d_path = BASE_DIR / d_name
+        if not d_path.exists():
+            continue
+        for p in d_path.rglob("*"):
+            if p.is_file() and query in p.name.lower():
+                results.append(str(p.relative_to(BASE_DIR)).replace('\\', '/'))
+    if results:
+        return f"Найдены файлы:\n" + "\n".join(results)
+    return "Файлы не найдены."
+
 ALL_AGENT_TOOLS = {
     "web_search": tool_web_search,
     "scrape_webpage": tool_scrape_webpage,
@@ -593,5 +608,6 @@ ALL_AGENT_TOOLS = {
     "install_skill": tool_install_skill,
     "list_installed_skills": tool_list_installed_skills,
     "notebooklm_synthesize": tool_notebooklm_synthesize,
-    "cloud_code_runner": tool_cloud_code_runner
+    "cloud_code_runner": tool_cloud_code_runner,
+    "find_file": tool_find_file
 }

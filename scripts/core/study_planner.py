@@ -70,6 +70,18 @@ SMART_TOPIC_BANK = [
 _RAM_PLAN_CACHE: Dict[str, Any] = SMART_TOPIC_BANK[0].copy()
 _RAM_PLAN_CACHE["date"] = datetime.date.today().strftime("%Y-%m-%d")
 
+def load_daily_plan() -> Dict[str, Any]:
+    return _RAM_PLAN_CACHE.copy()
+
+def save_daily_plan(plan: Dict[str, Any]):
+    global _RAM_PLAN_CACHE
+    _RAM_PLAN_CACHE = plan.copy()
+    try:
+        with open(PLAN_FILE, "w", encoding="utf-8") as f:
+            json.dump(plan, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] [!] Ошибка сохранения daily_plan.json: {e}")
+
 def _init_cache():
     global _RAM_PLAN_CACHE
     if PLAN_FILE.exists():
@@ -86,17 +98,6 @@ def _init_cache():
 
 _init_cache()
 
-def load_daily_plan() -> Dict[str, Any]:
-    return _RAM_PLAN_CACHE.copy()
-
-def save_daily_plan(plan: Dict[str, Any]):
-    global _RAM_PLAN_CACHE
-    _RAM_PLAN_CACHE = plan.copy()
-    try:
-        with open(PLAN_FILE, "w", encoding="utf-8") as f:
-            json.dump(plan, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] [!] Ошибка сохранения daily_plan.json: {e}")
 
 def _generate_daily_plan_sync():
     global _is_generating, _RAM_PLAN_CACHE

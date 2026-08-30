@@ -212,5 +212,32 @@ class ProcessManager:
     def get_task_logs(self, task_id: str, lines: int = 50) -> list:
         return self.get_logs(task_id, lines)
 
+def check_and_update_from_git():
+    import subprocess
+    import time
+    import sys
+    import os
+    try:
+        subprocess.run(["git", "fetch"], cwd=str(BASE_DIR), check=True)
+        status = subprocess.run(["git", "status", "-uno"], cwd=str(BASE_DIR), capture_output=True, text=True).stdout
+        if "Your branch is behind" in status:
+            print("[AutoUpdate] Update found! Pulling from git...")
+            subprocess.run(["git", "pull"], cwd=str(BASE_DIR), check=True)
+            print("[AutoUpdate] Restarting server in 2 seconds...")
+            time.sleep(2)
+            # Перезапуск текущего процесса
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+    except Exception as e:
+        print(f"[AutoUpdate] Failed to update: {e}")
+
+def auto_updater_loop():
+    import time
+    while True:
+        time.sleep(10800)  # 3 hours
+        check_and_update_from_git()
+
+import threading
+threading.Thread(target=auto_updater_loop, daemon=True, name="AutoUpdaterThread").start()
+
 process_manager = ProcessManager()
 pm = process_manager
