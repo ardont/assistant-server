@@ -1,5 +1,6 @@
 @echo off
-title HomeServer 24/7 AI Hub
+chcp 65001 > nul
+title HomeServer AI Hub
 echo =========================================
 echo Starting HomeServer ...
 echo =========================================
